@@ -16,7 +16,8 @@ gulp.task('zip', function() {
   return gulp.src('./dist/murk.js')
     .on('error', gutil.log)
     .pipe(ggzip())
-    .pipe(gulp.dest('./dist'));
+    .pipe(gulp.dest('./dist'))
+    .pipe(gulp.dest('./examples/js'));
 });
 
 gulp.task('gh', function() {
