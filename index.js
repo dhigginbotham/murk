@@ -1,11 +1,11 @@
-(function(root, murk) {
+(function(r, murk) {
   if (typeof module != 'undefined' && module.exports) {
     module.exports = murk;
   } else {
-    root['murk'] = murk;
+    r['murk'] = murk;
   }
 })(
-  window,
+  (typeof window != 'undefined' ? window : root),
   function murk(options) {
     if (!(this instanceof murk)) return new murk(options);
     // state reference, mostly for 
