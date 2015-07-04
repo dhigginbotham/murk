@@ -1,0 +1,39 @@
+* {
+    box-sizing: border-box;
+}
+body {
+    font-family: Arial;
+    font-size: 14px;
+}
+input {
+    margin: 5px 0;
+    padding: 5px;
+    width: 100%;
+    display: block;
+}
+.form-row {
+    margin: 5px 0;
+    border-bottom: 1px solid #cfcfcf;
+}
+#model {
+    background: #ececec;
+    padding: 10px;
+}
+.form-row div {
+    float: right;
+    font-weight: bold;
+    display: none;
+}
+.form-row div span {
+    color: #b4da55;
+}
+.hero {
+    background: #b4da55;
+    padding: 40px;
+    font-size: 24px;
+    line-height: 30px;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
