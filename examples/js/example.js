@@ -1,23 +1,24 @@
 (function(w,d) {
-  
+  var m;
+
   function init() {
-    var m = murk({
+    m = murk({
       dev: true,
       id: 'demo'
     });
 
-    setupSubscribers(m);
-    setupModel(m);
-    setupModelOutput(m);
-    setupBindingEvents(m);
+    setupSubscribers();
+    setupModel();
+    setupModelOutput();
+    setupBindingEvents();
   }
 
-  function setupModelOutput(m) {
+  function setupModelOutput() {
     var modelOutput = document.getElementById('model');
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
   }
 
-  function setupSubscribers(m) {
+  function setupSubscribers() {
     m.on(['firstExample','secondExample','thirdExample','fourthExample'], function(key) {
       var count = this.getAttribute('data-murk-count');
       var el = document.getElementById(key + 'Count');
@@ -30,7 +31,7 @@
     });
   }
 
-  function setupModel(m) {
+  function setupModel() {
     m.set({
       firstExample: 'this is',
       secondExample: 'data binding',
@@ -38,7 +39,7 @@
     });
   }
 
-  function setupBindingEvents(m) {
+  function setupBindingEvents() {
     $('[data-murk-example]').on('keyup blur', function(e) {
       m.set(this.getAttribute('id'), this.value);
       modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
