@@ -30,6 +30,7 @@ input {
 pre {
   background: #ececec;
   padding: 10px;
+  overflow: auto;
 }
 .form-row div {
   float: right;
