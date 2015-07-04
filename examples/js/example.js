@@ -1,5 +1,5 @@
 (function(w,d) {
-  var m;
+  var m, modelOutput;
 
   function init() {
     m = murk({
@@ -14,7 +14,7 @@
   }
 
   function setupModelOutput() {
-    var modelOutput = document.getElementById('model');
+    modelOutput = document.getElementById('model');
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
   }
 
