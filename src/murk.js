@@ -188,7 +188,6 @@ var murk = (function(murk) {
     attrs(opts.selectorPrefix + '-bound', true);
     // set innerText of value to elem
     this.innerText = state.model[key];
-    this.style.display = 'inherit';
   }
   
   // just a wrapper for elem.[set/get]Attribute()
