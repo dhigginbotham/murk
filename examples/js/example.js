@@ -7,7 +7,7 @@
     });
 
     setupSubscribers(m);
-    setupModel.call(m);
+    setupModel(m);
     setupModelOutput(m);
     setupBindingEvents(m);
   }
