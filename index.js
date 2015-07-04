@@ -28,6 +28,13 @@
   // model, this way we can use this
   // loosely as an event emitter
   function setModel(obj, str, merge) {
+    // allow str to be optional, slid
+    // merge over, set str to undefined
+    // so everything else works as intended
+    if (typeof str != 'string' && typeof merge == 'undefined') {
+      merge = str;
+      str = merge;
+    }
     // we'll always set merge to true,
     // this way you're not overwriting
     // the model unless you intend to
@@ -119,14 +126,25 @@
       state.subscribers[key] = [initialBindingEvent];
     }
     for(var i=0;i<state.subscribers[key].length;++i) {
-      state.subscribers[key][i].call(state, state.elems[key], key);
+      state.subscribers[key][i].call(state.elems[key], key);
     }
   }
 
   // attaches subsciber based on key :D
   function attachSubscriber(key, fn) {
-    if (!state.subscribers.hasOwnProperty(key)) state.subscribers[key] = [initialBindingEvent];
-    state.subscribers[key].push(fn);
+    function subscribe(k) {
+      if (!state.subscribers.hasOwnProperty(k)) {
+        state.subscribers[k] = [initialBindingEvent];
+      }
+      state.subscribers[k].push(fn);
+    }
+    if (key instanceof Array) {
+      for(var i=0;i<key.length;++i) {
+        subscribe(key[i]);
+      }
+    } else {
+      subscribe(key);
+    }
   }
 
   // when we bind elements we want to do some
@@ -134,8 +152,8 @@
   // however it's a lot of opinionated ideas so
   // keeping them as an event allows you to remove
   // this...
-  function initialBindingEvent(elem, key) {
-    var attrs = attr(elem);
+  function initialBindingEvent(key) {
+    var attrs = attr(this);
     if (opts.trackCount) {
       // we want to keep track of how many
       // times we're interacting with this
@@ -150,7 +168,7 @@
     // to this elem
     attrs(opts.selectorPrefix + '-bound', true);
     // set innerText of value to elem
-    return elem.innerText = state.model[key];
+    return this.innerText = state.model[key];
   }
   
   // just a wrapper for elem.[set/get]Attribute()
