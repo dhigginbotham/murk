@@ -1,46 +1,51 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 body {
-    font-family: Arial;
-    font-size: 14px;
+  font-family: Arial;
+  font-size: 14px;
+}
+h1,h2,h3,h4,h5,h6 {
+  color: #b4da55;
+  line-height: 1;
+  margin: 10px 0 0;
+  padding: 0;
 }
 h1 {
-    color: #b4da55;
-    line-height: 1;
-    margin: 10px 0 0;
-    padding: 0;
-    font-size: 40px;
+  font-size: 40px;
+}
+label {
+  font-weight: bold;
 }
 input {
-    margin: 5px 0;
-    padding: 5px;
-    width: 100%;
-    display: block;
+  margin: 5px 0;
+  padding: 5px;
+  width: 100%;
+  display: block;
 }
 .form-row {
-    margin: 5px 0;
-    border-bottom: 1px solid #cfcfcf;
+  margin: 5px 0;
+  border-bottom: 1px solid #cfcfcf;
 }
-#model {
-    background: #ececec;
-    padding: 10px;
+pre {
+  background: #ececec;
+  padding: 10px;
 }
 .form-row div {
-    float: right;
-    font-weight: bold;
-    display: none;
+  float: right;
+  font-weight: bold;
+  display: none;
 }
 .form-row div span {
-    color: #b4da55;
+  color: #b4da55;
 }
 .hero {
-    background: #b4da55;
-    padding: 40px;
-    font-size: 24px;
-    line-height: 30px;
-    text-align: center;
-    color: #fff;
-    text-shadow: 0 1px 1px rgba(0,0,0,0.2);
-    overflow: hidden;
+  background: #b4da55;
+  padding: 40px;
+  font-size: 24px;
+  line-height: 30px;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+  overflow: hidden;
 }
