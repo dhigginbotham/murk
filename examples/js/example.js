@@ -25,8 +25,8 @@
       var input = document.getElementById(key);
       if (!input.value) input.value = decodeURIComponent(this.getAttribute('data-murk-val'));
       if (count) {
-          m.set(key + 'Count', count);
-          el.style.display = 'inherit';
+        m.set(key + 'Count', count);
+        el.style.display = 'inherit';
       }
     });
   }
