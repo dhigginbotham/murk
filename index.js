@@ -89,12 +89,14 @@
       attrs = attr(elem);
       key = attrs(opts.selectorPrefix);
       if (key) {
-        if (!state.elems.hasOwnProperty(key)) state.elems[key] = elem;
-        // check if keys already being bound,
-        // if not keep track of them
-        if (!~state.keys.indexOf(key)) {
-          state.keys.push(key);
-          state.dom.push(elem);
+        if (!state.elems.hasOwnProperty(key)) {
+          state.elems[key] = elem;
+          // check if keys already being bound,
+          // if not keep track of them
+          if (!~state.keys.indexOf(key)) {
+            state.keys.push(key);
+            state.dom.push(elem);
+          }
         }
         if (state.model.hasOwnProperty(key)) {
           // we only want to modify elems that 
