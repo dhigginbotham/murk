@@ -1,10 +1,10 @@
-(function(w, murk) {
+var murk = (function(murk) {
   if (typeof module != 'undefined' && module.exports) {
-    module.exports = murk;
+    return module.exports = murk;
   } else {
-    w['murk'] = murk;
+    return murk;
   }
-})((typeof window != 'undefined' ? window : {}), function murk(options) {
+})(function(options) {
   if (!(this instanceof murk)) return new murk(options);
   // state reference, mostly for 
   // dev/internal use and context
@@ -19,10 +19,13 @@
   var opts = {
     selectorPrefix: 'data-murk',
     trackCount: true,
-    dev: false
+    dev: false,
+    id: Date.now()
   };
 
   if (options) extend.call(opts, options);
+
+  var self = this;
 
   // only way to interact with our 
   // model, this way we can use this
@@ -54,7 +57,8 @@
         state.model = obj;
       }
     }
-    return collectElems();
+    collectElems();
+    return self;
   }
 
   // gets the model, yeye
@@ -94,29 +98,34 @@
     attrs = attr(elem);
     key = attrs(opts.selectorPrefix);
     if (key) {
-      if (!state.elems.hasOwnProperty(key)) {
-        state.elems[key] = elem;
-        // check if keys already being bound,
-        // if not keep track of them
-        if (!~state.keys.indexOf(key)) {
-          state.keys.push(key);
-          state.dom.push(elem);
-        }
+      if (!attrs(opts.selectorPrefix + '-id')) {
+        attrs(opts.selectorPrefix + '-id', opts.id);
       }
-      if (state.model.hasOwnProperty(key)) {
-        // we only want to modify elems that 
-        // have changed their values
-        if (decodeURIComponent(attrs(opts.selectorPrefix + '-val')) != state.model[key]) {
-          // keep track of our elems to use
-          // later as reference
-          // handle any subscribers on this elem
-          handleSubscribers(key);
+      if (attrs(opts.selectorPrefix + '-id') == opts.id) {
+        if (!state.elems.hasOwnProperty(key)) {
+          state.elems[key] = elem;
+          // check if keys already being bound,
+          // if not keep track of them
+          if (!~state.keys.indexOf(key)) {
+            state.keys.push(key);
+            state.dom.push(elem);
+          }
         }
-      } else {
-        attrs(opts.selectorPrefix + '-bound', false);
+        if (state.model.hasOwnProperty(key)) {
+          // we only want to modify elems that 
+          // have changed their values
+          if (decodeURIComponent(attrs(opts.selectorPrefix + '-val')) != state.model[key]) {
+            // keep track of our elems to use
+            // later as reference
+            // handle any subscribers on this elem
+            handleSubscribers(key);
+          }
+        } else {
+          attrs(opts.selectorPrefix + '-bound', false);
+        }
       }
     }
-    return true;
+    return false;
   }
 
   // handles our subscribers, proves
@@ -145,6 +154,7 @@
     } else {
       subscribe(key);
     }
+    return self;
   }
 
   // when we bind elements we want to do some
