@@ -174,7 +174,9 @@ function murk(options) {
   }
 
   this.set = setModel;
+  this.get = getModel;
   this.on = attachSubscriber;
+  this.emit = handleSubscribers;
 
   if (opts.dev) this.state = state;
 
