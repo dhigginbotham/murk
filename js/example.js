@@ -25,7 +25,7 @@
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
 
     $('[data-murk-example]').on('keyup blur', function(e) {
-      m.set(this.getAttribute('id'), this.value);
+      m.set(this.id, this.value); 
       modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
     });
   }
