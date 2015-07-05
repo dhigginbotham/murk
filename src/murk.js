@@ -120,8 +120,7 @@ var murk = (function(murk) {
             state.keys.push(key);
             state.dom.push(elem);
           }
-          // lets allow databinding of embedded
-          // values..
+          // lets allow databinding of embedded values..
           if (elem.innerText && !state.model.hasOwnProperty(key)) {
             state.model[key] = elem.innerText;
           }
