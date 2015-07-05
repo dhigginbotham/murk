@@ -13,14 +13,15 @@ var murk = (function(murk) {
     dom: [],
     elems: {},
     subscribers: {},
-    keys: []
+    keys: [],
+    start: Date.now()
   };
 
   var opts = {
     selectorPrefix: 'data-murk',
     trackCount: true,
     dev: false,
-    id: Date.now()
+    id: state.start
   };
 
   if (options) extend.call(opts, options);
@@ -51,7 +52,7 @@ var murk = (function(murk) {
         return collectElems(state.elems[obj]);
       }
     } else {
-      if (Object.keys(state.model).length || merge) {
+      if (merge) {
         extend.call(state.model, obj);
       } else {
         state.model = obj;
@@ -121,7 +122,7 @@ var murk = (function(murk) {
           }
           // lets allow databinding of embedded
           // values..
-          if (elem.innerText) {
+          if (elem.innerText && !state.model.hasOwnProperty(key)) {
             state.model[key] = elem.innerText;
           }
         }
@@ -162,9 +163,7 @@ var murk = (function(murk) {
       state.subscribers[k].push(fn);
     }
     if (key instanceof Array) {
-      for(var i=0;i<key.length;++i) {
-        subscribe(key[i]);
-      }
+      Array.prototype.map.call(key, subscribe);
     } else {
       subscribe(key);
     }
