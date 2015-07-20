@@ -20,7 +20,7 @@ var murk = (function(murk) {
   var opts = {
     selectorPrefix: 'data-murk',
     trackCount: true,
-    dev: false,
+    dev: true,
     id: state.start
   };
 
@@ -146,18 +146,30 @@ var murk = (function(murk) {
   // context to the state object as `this`
   function handleSubscribers(key) {
     if (!state.subscribers.hasOwnProperty(key)) {
-      state.subscribers[key] = [initialBindingEvent];
+      state.subscribers[key] = [elemBindingEvent, trackCountEvent];
     }
-    for(var i=0;i<state.subscribers[key].length;++i) {
-      state.subscribers[key][i].call(state.elems[key], key);
+    var copy = Array.prototype.slice.call(state.subscribers[key]);
+    // recurse through subscriber calls
+    function processSubscribers(fn, done) {
+      fn.call(state.elems[key], key, function(err, success) {
+        if (copy.length) {
+          if (err) return done(err, copy);
+          return processSubscribers(copy.shift(), done);
+        }
+        return done(null, true);
+      });
     }
+    processSubscribers(copy.shift(), function(err, success) {
+      if (err) console.log('error handling subscriber of ' + key);
+      if (opts.dev && success) console.log('finished handling subscribers');
+    });
   }
 
   // attaches subsciber based on key :D
   function attachSubscriber(key, fn) {
     function subscribe(k) {
       if (!state.subscribers.hasOwnProperty(k)) {
-        state.subscribers[k] = [initialBindingEvent];
+        state.subscribers[k] = [elemBindingEvent, trackCountEvent];
       }
       state.subscribers[k].push(fn);
     }
@@ -169,12 +181,11 @@ var murk = (function(murk) {
     return self;
   }
 
-  // when we bind elements we want to do some
-  // stuff to them to get some real databinding
-  // however it's a lot of opinionated ideas so
-  // keeping them as an event allows you to remove
-  // this...
-  function initialBindingEvent(key) {
+  function trackCountEvent(key, fn) {
+    if (opts.dev) {
+      console.log('trackCountEvent');
+      console.log(key);
+    }
     var attrs = attr(this);
     if (opts.trackCount) {
       // we want to keep track of how many
@@ -183,6 +194,20 @@ var murk = (function(murk) {
       count = attrs(opts.selectorPrefix + '-count');
       attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
     }
+    if (fn) return fn(null, true);
+  }
+
+  // when we bind elements we want to do some
+  // stuff to them to get some real databinding
+  // however it's a lot of opinionated ideas so
+  // keeping them as an event allows you to remove
+  // this...
+  function elemBindingEvent(key, fn) {
+    if (opts.dev) {
+      console.log('elemBindingEvent');
+      console.log(key);
+    }
+    var attrs = attr(this);
     // encode and set a reference of our 
     // newly bound value
     attrs(opts.selectorPrefix + '-val', encodeURIComponent(state.model[key]));
@@ -191,6 +216,7 @@ var murk = (function(murk) {
     attrs(opts.selectorPrefix + '-bound', true);
     // set innerText of value to elem
     this.innerText = state.model[key];
+    if (fn) return fn(null, true);
   }
   
   // just a wrapper for elem.[set/get]Attribute()
