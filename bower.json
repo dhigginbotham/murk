@@ -1,0 +1,25 @@
+{
+  "name": "murk",
+  "main": "./dist/murk.js",
+  "version": "0.0.1",
+  "homepage": "https://github.com/dhigginbotham/murk",
+  "authors": [
+    "David Higginbotham <davehigginbotham@gmail.com>"
+  ],
+  "description": "extremely simple data binding",
+  "keywords": [
+    "databinding"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dhigginbotham/murk.git"
+  },
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
