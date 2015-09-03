@@ -13,6 +13,7 @@ var murk = (function(murk) {
     dom: [],
     elems: {},
     subscribers: {},
+    filters: {},
     keys: [],
     start: Date.now()
   };
@@ -20,7 +21,7 @@ var murk = (function(murk) {
   var opts = {
     selectorPrefix: 'data-murk',
     trackCount: true,
-    dev: true,
+    dev: false,
     id: state.start
   };
 
@@ -101,7 +102,7 @@ var murk = (function(murk) {
 
   // binds elem from model, simple things
   function bindElem(elem) {
-    var attrs, key, count;
+    var attrs, key;
     attrs = attr(elem);
     key = attrs(opts.selectorPrefix);
     if (key) {
@@ -121,8 +122,8 @@ var murk = (function(murk) {
             state.dom.push(elem);
           }
           // lets allow databinding of embedded values..
-          if (elem.innerText && !state.model.hasOwnProperty(key)) {
-            state.model[key] = elem.innerText;
+          if (elem.innerHTML && !state.model.hasOwnProperty(key)) {
+            state.model[key] = elem.innerHTML;
           }
         }
         if (state.model.hasOwnProperty(key)) {
@@ -146,7 +147,7 @@ var murk = (function(murk) {
   // context to the state object as `this`
   function handleSubscribers(key) {
     if (!state.subscribers.hasOwnProperty(key)) {
-      state.subscribers[key] = [elemBindingEvent, trackCountEvent];
+      state.subscribers[key] = [elemBindingEvent, trackCountEvent, processFilters];
     }
     var copy = Array.prototype.slice.call(state.subscribers[key]);
     // recurse through subscriber calls
@@ -169,7 +170,7 @@ var murk = (function(murk) {
   function attachSubscriber(key, fn) {
     function subscribe(k) {
       if (!state.subscribers.hasOwnProperty(k)) {
-        state.subscribers[k] = [elemBindingEvent, trackCountEvent];
+        state.subscribers[k] = [elemBindingEvent, trackCountEvent, processFilters];
       }
       state.subscribers[k].push(fn);
     }
@@ -186,16 +187,46 @@ var murk = (function(murk) {
       console.log('trackCountEvent');
       console.log(key);
     }
+    var count;
     var attrs = attr(this);
     if (opts.trackCount) {
       // we want to keep track of how many
-      // times we're interacting with this
-      // finally, set innerText to our value
+      // times we're interacting with our 
+      // elems
       count = attrs(opts.selectorPrefix + '-count');
       attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
     }
     if (fn) return fn(null, true);
   }
+
+  function processFilters(key, fn) {
+    if (opts.dev) {
+      console.log('processFilters');
+      console.log(key);
+    }
+    var attrs = attr(this);
+    var filters = attrs(opts.selectorPrefix + '-filter');
+    if (filters) {
+      if (filters.indexOf(',') != -1) filters = filters.split(',');
+      if (!(filters instanceof Array)) filters = [filters];
+      Array.prototype.map.call(filters, function(filter) {
+        if (state.filters[filter] && state.model[key]) {
+          var val = state.filters[filter](state.model[key]);
+          if (typeof val != 'undefined' && val != state.model[key]) {
+            setModel(key, val);
+          }
+        }
+      });
+    }
+    if (fn) return fn(null, true);
+  }
+
+  function registerFilter(key, fn) {
+    if (key && fn) {
+      state.filters[key] = fn;
+    }
+    return self;
+  };
 
   // when we bind elements we want to do some
   // stuff to them to get some real databinding
@@ -215,7 +246,7 @@ var murk = (function(murk) {
     // to this elem
     attrs(opts.selectorPrefix + '-bound', true);
     // set innerText of value to elem
-    this.innerText = state.model[key];
+    this.innerHTML = state.model[key];
     if (fn) return fn(null, true);
   }
   
@@ -251,6 +282,7 @@ var murk = (function(murk) {
   this.get = getModel;
   this.set = setModel;
   this.on = attachSubscriber;
+  this.registerFilter = registerFilter;
   if (opts.dev) this.state = state;
 
   return this;

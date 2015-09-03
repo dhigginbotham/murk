@@ -6,7 +6,10 @@ var example = (function(w,d) {
       dev: true,
       id: 'demo'
     });
-    m.on(['firstExample','secondExample','thirdExample','fourthExample'], function(key, fn) {
+    m.registerFilter('reverseStr', function(val) {
+      console.log(val);
+      return 2;
+    }).on(['firstExample','secondExample','thirdExample','fourthExample'], function(key, fn) {
       var count = this.getAttribute('data-murk-count');
       var el = d.getElementById(key + 'Count');
       var input = d.getElementById(key);
@@ -25,12 +28,9 @@ var example = (function(w,d) {
     modelOutput = d.getElementById('model');
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
 
-    console.log(m);
-
     $('[data-murk-example]').on('keyup blur', function(e) {
       m.set(this.id, this.value); 
       modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
-      console.log(m);
     });
   }
 
