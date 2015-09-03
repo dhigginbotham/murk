@@ -147,7 +147,7 @@ var murk = (function(murk) {
   // context to the state object as `this`
   function handleSubscribers(key) {
     if (!state.subscribers.hasOwnProperty(key)) {
-      state.subscribers[key] = [elemBindingEvent, trackCountEvent, processFilters];
+      state.subscribers[key] = [elemBindingEvent, processFilters, trackCountEvent];
     }
     var copy = Array.prototype.slice.call(state.subscribers[key]);
     // recurse through subscriber calls
@@ -161,8 +161,10 @@ var murk = (function(murk) {
       });
     }
     processSubscribers(copy.shift(), function(err, success) {
-      if (err) console.log('error handling subscriber of ' + key);
-      if (opts.dev && success) console.log('finished handling subscribers');
+      if (err) console.log('handleSubscribers error for %s', key);
+      if (opts.dev && success) {
+        console.log('handleSubscribers for %s', key);
+      }
     });
   }
 
@@ -170,7 +172,7 @@ var murk = (function(murk) {
   function attachSubscriber(key, fn) {
     function subscribe(k) {
       if (!state.subscribers.hasOwnProperty(k)) {
-        state.subscribers[k] = [elemBindingEvent, trackCountEvent, processFilters];
+        state.subscribers[k] = [elemBindingEvent, processFilters, trackCountEvent];
       }
       state.subscribers[k].push(fn);
     }
@@ -182,38 +184,40 @@ var murk = (function(murk) {
     return pub;
   }
 
+  // we want to keep track of how many
+  // times we're interacting with our 
+  // elems
   function trackCountEvent(key, fn) {
     if (opts.dev) {
-      console.log('trackCountEvent');
-      console.log(key);
+      console.log('trackCountEvent for %s', key);
     }
     var count;
     var attrs = attr(this);
     if (opts.trackCount) {
-      // we want to keep track of how many
-      // times we're interacting with our 
-      // elems
       count = attrs(opts.selectorPrefix + '-count');
       attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
     }
     if (fn) return fn(null, true);
   }
 
+  // proccesses the filters added to any
+  // given bound elem
   function processFilters(key, fn) {
     if (opts.dev) {
-      console.log('processFilters');
-      console.log(key);
+      console.log('processingFilters for %s', key);
     }
     var attrs = attr(this);
-    var filters = attrs(opts.selectorPrefix + '-filter');
-    if (filters) {
-      if (filters.indexOf(',') != -1) filters = filters.split(',');
-      if (!(filters instanceof Array)) filters = [filters];
-      for (var i=0;i<filters.length;++i) {
-        if (state.filters[filters[i]] && state.model[key]) {
-          var val = state.filters[filters[i]](state.model[key]);
-          if (typeof val != 'undefined' && val != state.model[key]) {
-            this.innerHTML = val;
+    if (attrs) {
+      var filters = attrs(opts.selectorPrefix + '-filter');
+      if (filters) {
+        if (filters.indexOf(',') != -1) filters = filters.split(',');
+        if (!(filters instanceof Array)) filters = [filters];
+        for (var i=0;i<filters.length;++i) {
+          if (state.filters.hasOwnProperty(filters[i]) && state.model.hasOwnProperty(key)) {
+            var val = state.filters[filters[i]](state.model[key]);
+            if (typeof val != 'undefined' && val != state.model[key]) {
+              this.innerHTML = val;
+            }
           }
         }
       }
@@ -235,8 +239,7 @@ var murk = (function(murk) {
   // this...
   function elemBindingEvent(key, fn) {
     if (opts.dev) {
-      console.log('elemBindingEvent');
-      console.log(key);
+      console.log('elemBindingEvent for %s', key);
     }
     var attrs = attr(this);
     // encode and set a reference of our 

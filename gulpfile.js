@@ -2,7 +2,10 @@ var gulp = require('gulp'),
     guglify = require('gulp-uglify'),
     ggzip = require('gulp-gzip'),
     gpages = require('gulp-gh-pages'),
-    gutil = require('gulp-util');
+    gutil = require('gulp-util'),
+    gtemplate = require('gulp-template'),
+    grename = require('gulp-rename'),
+    fs = require('fs');
 
 gulp.task('min', function() {
   return gulp.src('./src/murk.js')
@@ -17,6 +20,14 @@ gulp.task('zip', function() {
     .on('error', gutil.log)
     .pipe(ggzip())
     .pipe(gulp.dest('./dist'));
+});
+
+gulp.task('template', function() {
+  var example = fs.readFileSync('./examples/js/example.js');
+  return gulp.src('./examples/template.tmpl')
+    .pipe(gtemplate({ js: example }))
+    .pipe(grename('./examples/index.html'))
+    .pipe(gulp.dest('./examples'));
 });
 
 gulp.task('gh', function() {

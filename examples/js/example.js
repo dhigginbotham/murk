@@ -6,9 +6,12 @@ var example = (function(w,d) {
       dev: true,
       id: 'demo'
     });
+
     m.registerFilter('reverseStr', function(val) {
       return val.split('').reverse().join('');
-    }).on(['firstExample','secondExample','thirdExample','fourthExample'], function(key, fn) {
+    });
+
+    m.on(['firstExample','secondExample','thirdExample','fourthExample'], function(key, fn) {
       var count = this.getAttribute('data-murk-count');
       var el = d.getElementById(key + 'Count');
       var input = d.getElementById(key);
@@ -18,12 +21,14 @@ var example = (function(w,d) {
         el.style.display = 'inherit';
       }
       if (fn) return fn(null, true);
-    }).set({
+    });
+    
+    m.set({
       firstExample: 'this is',
       secondExample: 'data binding',
       thirdExample: 'murked.'
     });
-    
+
     modelOutput = d.getElementById('model');
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
 
@@ -38,4 +43,3 @@ var example = (function(w,d) {
   return m;
 
 })(window,document);
-
