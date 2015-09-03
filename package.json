@@ -25,10 +25,10 @@
     "url": "https://github.com/dhigginbotham/murk/issues"
   },
   "devDependencies": {
-    "gulp-gzip": "~1.1.0",
-    "gulp-util": "~3.0.6",
     "gulp": "~3.9.0",
-    "gulp-gh-pages": "~0.5.2",
-    "gulp-uglify": "~1.2.0"
+    "gulp-gh-pages": "^0.5.2",
+    "gulp-gzip": "~1.1.0",
+    "gulp-uglify": "~1.2.0",
+    "gulp-util": "~3.0.6"
   }
 }
