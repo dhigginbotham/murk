@@ -26,7 +26,7 @@ gulp.task('template', function() {
   var example = fs.readFileSync('./examples/js/example.js');
   return gulp.src('./examples/template.tmpl')
     .pipe(gtemplate({ js: example }))
-    .pipe(grename('./examples/index.html'))
+    .pipe(grename('./index.html'))
     .pipe(gulp.dest('./examples'));
 });
 

@@ -8,6 +8,14 @@ body {
   font-family: Arial;
   font-size: 14px;
 }
+a,
+a:hover,
+a:active,
+a:focus,
+a:visited {
+  text-decoration: none;
+  color: #b4da55;
+}
 h1,h2,h3,h4,h5,h6 {
   color: #b4da55;
   line-height: 1;
@@ -16,6 +24,9 @@ h1,h2,h3,h4,h5,h6 {
 }
 h1 {
   font-size: 40px;
+}
+h1 .small {
+  font-size: 50%;
 }
 label {
   font-weight: bold;
@@ -26,14 +37,20 @@ input {
   width: 100%;
   display: block;
 }
-.form-row {
-  margin: 5px 0;
-  border-bottom: 1px solid #cfcfcf;
-}
 pre {
   background: #ececec;
   padding: 10px;
   overflow: auto;
+}
+.pr {
+  float: right;
+}
+.pl {
+  float: left;
+}
+.form-row {
+  margin: 5px 0;
+  border-bottom: 1px solid #cfcfcf;
 }
 .form-row div {
   float: right;
