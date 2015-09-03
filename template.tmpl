@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MURK EXAMPLE</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+  <h1>MURK</h1>  
+
+  <div class="hero">
+    <div data-murk="firstExample" data-murk-filter="reverseStr"></div>
+    <div data-murk="secondExample"></div>
+    <div data-murk="thirdExample"></div>
+    <div data-murk="fourthExample" data-murk-filter="reverseStr">embedded example</div>
+  </div>
+
+  <div class="form-row">
+    <label for="firstExample">First Example:</label>
+    <div id="firstExampleCount">
+      Binding count:
+      <span data-murk="firstExampleCount"></span>
+    </div>
+    <input type="text" id="firstExample" data-murk-example/>
+  </div>
+
+  <div class="form-row">
+    <label for="secondExample">Second Example:</label>
+    <div id="secondExampleCount">
+      Binding count:
+      <span data-murk="secondExampleCount"></span>
+    </div>
+    <input type="text" id="secondExample" data-murk-example/>    
+  </div>
+
+  <div class="form-row">
+    <label for="thirdExample">Third Example:</label>
+    <div id="thirdExampleCount">
+      Binding count:
+      <span data-murk="thirdExampleCount"></span>
+    </div>
+    <input type="text" id="thirdExample" data-murk-example/>
+  </div>
+
+  <div class="form-row">
+    <label for="fourthExample">Fourth Example:</label>
+    <div id="fourthExampleCount" style="display: none;">
+      Binding count:
+      <span data-murk="fourthExampleCount"></span>
+    </div>
+    <input type="text" id="fourthExample" data-murk-example/>    
+  </div>
+
+  <h3>Current model: </h3>
+  <pre id="model"></pre>
+
+  <h3>Example usage: </h3>
+  <pre id="jsExample">
+    <%=js%>
+  </pre>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script src="js/murk.js"></script>
+  <script src="js/example.js"></script>
+
+</body>
+</html>
