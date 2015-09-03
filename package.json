@@ -1,6 +1,6 @@
 {
   "name": "murk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "data binding in new browsers",
   "main": "index.js",
   "directories": {
