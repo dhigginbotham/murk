@@ -7,7 +7,7 @@ var example = (function(w,d) {
       id: 'demo'
     });
     m.registerFilter('reverseStr', function(val) {
-      return val + ' we added things... ';
+      return val.split('').reverse().join('');
     }).on(['firstExample','secondExample','thirdExample','fourthExample'], function(key, fn) {
       var count = this.getAttribute('data-murk-count');
       var el = d.getElementById(key + 'Count');
