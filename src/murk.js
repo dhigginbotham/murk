@@ -199,10 +199,9 @@ var murk = (function(murk) {
     if (fn) return fn(null, true);
   }
 
-  var filteredCount = 0;
   function processFilters(key, fn) {
     if (opts.dev) {
-      console.log('processFilters ' + (++filteredCount));
+      console.log('processFilters');
       console.log(key);
     }
     var attrs = attr(this);
