@@ -152,20 +152,16 @@ var murk = (function(murk) {
     var copy = Array.prototype.slice.call(state.subscribers[key]);
     // recurse through subscriber calls
     function processSubscribers(fn, done) {
+      if (opts.dev) console.log('processed subscriber for %s', key);
       fn.call(state.elems[key], key, function(err, success) {
         if (copy.length) {
           if (err) return done(err, copy);
           return processSubscribers(copy.shift(), done);
         }
-        return done(null, true);
+        return (done ? done(null, true) : true);
       });
     }
-    processSubscribers(copy.shift(), function(err, success) {
-      if (err) console.log('handleSubscribers error for %s', key);
-      if (opts.dev && success) {
-        console.log('handleSubscribers for %s', key);
-      }
-    });
+    processSubscribers(copy.shift());
   }
 
   // attaches subsciber based on key :D
@@ -188,9 +184,6 @@ var murk = (function(murk) {
   // times we're interacting with our 
   // elems
   function trackCountEvent(key, fn) {
-    if (opts.dev) {
-      console.log('trackCountEvent for %s', key);
-    }
     var count;
     var attrs = attr(this);
     if (opts.trackCount) {
@@ -203,9 +196,6 @@ var murk = (function(murk) {
   // proccesses the filters added to any
   // given bound elem
   function processFilters(key, fn) {
-    if (opts.dev) {
-      console.log('processingFilters for %s', key);
-    }
     var attrs = attr(this);
     if (attrs) {
       var filters = attrs(opts.selectorPrefix + '-filter');
@@ -238,9 +228,6 @@ var murk = (function(murk) {
   // keeping them as an event allows you to remove
   // this...
   function elemBindingEvent(key, fn) {
-    if (opts.dev) {
-      console.log('elemBindingEvent for %s', key);
-    }
     var attrs = attr(this);
     // encode and set a reference of our 
     // newly bound value
