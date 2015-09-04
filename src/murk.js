@@ -27,6 +27,9 @@ var murk = (function(murk) {
 
   if (options) extend.call(opts, options);
 
+  var enc = encodeURIComponent;
+  var dec = decodeURIComponent;
+
   var pub = {};
 
   // only way to interact with our 
@@ -129,7 +132,7 @@ var murk = (function(murk) {
         if (state.model.hasOwnProperty(key)) {
           // we only want to modify elems that 
           // have changed their values
-          if (decodeURIComponent(attrs(opts.selectorPrefix + '-val')) != state.model[key]) {
+          if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key]) {
             // keep track of our elems to use
             // later as reference
             // handle any subscribers on this elem
@@ -196,16 +199,24 @@ var murk = (function(murk) {
   // proccesses the filters added to any
   // given bound elem
   function processFilters(key, fn) {
-    var attrs = attr(this);
+    var attrs, filters; 
+    attrs = attr(this);
     if (attrs) {
-      var filters = attrs(opts.selectorPrefix + '-filter');
+      filters = attrs(opts.selectorPrefix + '-filter');
       if (filters) {
         if (filters.indexOf(',') != -1) filters = filters.split(',');
         if (!(filters instanceof Array)) filters = [filters];
         for (var i=0;i<filters.length;++i) {
-          if (state.filters.hasOwnProperty(filters[i]) && state.model.hasOwnProperty(key)) {
-            var val = state.filters[filters[i]](state.model[key]);
-            if (typeof val != 'undefined' && val != state.model[key]) {
+          var filteredVal, val;
+          if (state.filters.hasOwnProperty(filters[i]) 
+            && state.model.hasOwnProperty(key)) {
+            filteredVal = (attrs(opts.selectorPrefix + '-filtered-val') 
+              ? dec(attrs(opts.selectorPrefix + '-filtered-val')) 
+              : null);
+            val = state.filters[filters[i]].call(state.elems[key], state.model[key]);
+            if (typeof val != 'undefined' 
+              && filteredVal != val) {
+              attrs(opts.selectorPrefix + '-filtered-val', enc(val));
               this.innerHTML = val;
             }
           }
@@ -231,7 +242,7 @@ var murk = (function(murk) {
     var attrs = attr(this);
     // encode and set a reference of our 
     // newly bound value
-    attrs(opts.selectorPrefix + '-val', encodeURIComponent(state.model[key]));
+    attrs(opts.selectorPrefix + '-val', enc(state.model[key]));
     // keep visual refence we're bound
     // to this elem
     attrs(opts.selectorPrefix + '-bound', true);
