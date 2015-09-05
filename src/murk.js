@@ -213,7 +213,7 @@ var murk = (function(murk) {
             filteredVal = (attrs(opts.selectorPrefix + '-filtered-val') 
               ? dec(attrs(opts.selectorPrefix + '-filtered-val')) 
               : null);
-            val = state.filters[filters[i]].call(state.elems[key], state.model[key]);
+            val = state.filters[filters[i]].call(this, state.model[key]);
             if (typeof val != 'undefined' 
               && filteredVal != val) {
               attrs(opts.selectorPrefix + '-filtered-val', enc(val));
@@ -231,7 +231,7 @@ var murk = (function(murk) {
       state.filters[key] = fn;
     }
     return pub;
-  };
+  }
 
   // when we bind elements we want to do some
   // stuff to them to get some real databinding
