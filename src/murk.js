@@ -1,11 +1,11 @@
-var murk = (function(murk) {
+var murk = (function(fn) {
   if (typeof module != 'undefined' && module.exports) {
-    return module.exports = murk;
+    return module.exports = fn;
   } else {
-    return murk;
+    return fn;
   }
-})(function murk(options) {
-  // if (!(this instanceof murk)) return new murk(options);
+})(function(options) {
+  if (!(this instanceof murk)) return new murk(options);
   // state reference, mostly for 
   // dev/internal use and context
   var state = {
@@ -29,8 +29,6 @@ var murk = (function(murk) {
 
   var enc = encodeURIComponent;
   var dec = decodeURIComponent;
-
-  var pub = {};
 
   // only way to interact with our 
   // model, this way we can use this
@@ -63,7 +61,7 @@ var murk = (function(murk) {
       }
     }
     collectElems();
-    return pub;
+    return this;
   }
 
   // gets the model, yeye
@@ -150,12 +148,11 @@ var murk = (function(murk) {
   // context to the state object as `this`
   function handleSubscribers(key) {
     if (!state.subscribers.hasOwnProperty(key)) {
-      state.subscribers[key] = [elemBindingEvent, processFilters, trackCountEvent];
+      state.subscribers[key] = [elemBindingEvent, processFiltersEvent, trackCountEvent];
     }
     var copy = Array.prototype.slice.call(state.subscribers[key]);
     // recurse through subscriber calls
     function processSubscribers(fn, done) {
-      if (opts.dev) console.log('processed subscriber for %s', key);
       fn.call(state.elems[key], key, function(err, success) {
         if (copy.length) {
           if (err) return done(err, copy);
@@ -171,7 +168,7 @@ var murk = (function(murk) {
   function attachSubscriber(key, fn) {
     function subscribe(k) {
       if (!state.subscribers.hasOwnProperty(k)) {
-        state.subscribers[k] = [elemBindingEvent, processFilters, trackCountEvent];
+        state.subscribers[k] = [elemBindingEvent, processFiltersEvent, trackCountEvent];
       }
       state.subscribers[k].push(fn);
     }
@@ -180,7 +177,7 @@ var murk = (function(murk) {
     } else {
       subscribe(key);
     }
-    return pub;
+    return this;
   }
 
   // we want to keep track of how many
@@ -198,29 +195,30 @@ var murk = (function(murk) {
 
   // proccesses the filters added to any
   // given bound elem
-  function processFilters(key, fn) {
-    var attrs, filters; 
+  function processFiltersEvent(key, fn) {
+    var attrs, filters, processFilter; 
     attrs = attr(this);
     if (attrs) {
+      processFilter = function(filter) {
+        var filteredVal, val;
+        if (state.filters.hasOwnProperty(filter) 
+          && state.model.hasOwnProperty(key)) {
+          filteredVal = (attrs(opts.selectorPrefix + '-filtered-val') 
+            ? dec(attrs(opts.selectorPrefix + '-filtered-val')) 
+            : null);
+          val = state.filters[filter].call(this, state.model[key]);
+          if (typeof val != 'undefined' 
+            && filteredVal != val) {
+            attrs(opts.selectorPrefix + '-filtered-val', enc(val));
+            this.innerHTML = val;
+          }
+        }
+      }.bind(this);
       filters = attrs(opts.selectorPrefix + '-filter');
       if (filters) {
         if (filters.indexOf(',') != -1) filters = filters.split(',');
         if (!(filters instanceof Array)) filters = [filters];
-        for (var i=0;i<filters.length;++i) {
-          var filteredVal, val;
-          if (state.filters.hasOwnProperty(filters[i]) 
-            && state.model.hasOwnProperty(key)) {
-            filteredVal = (attrs(opts.selectorPrefix + '-filtered-val') 
-              ? dec(attrs(opts.selectorPrefix + '-filtered-val')) 
-              : null);
-            val = state.filters[filters[i]].call(this, state.model[key]);
-            if (typeof val != 'undefined' 
-              && filteredVal != val) {
-              attrs(opts.selectorPrefix + '-filtered-val', enc(val));
-              this.innerHTML = val;
-            }
-          }
-        }
+        Array.prototype.map.call(filters, processFilter);
       }
     }
     if (fn) return fn(null, true);
@@ -230,7 +228,7 @@ var murk = (function(murk) {
     if (key && fn) {
       state.filters[key] = fn;
     }
-    return pub;
+    return this;
   }
 
   // when we bind elements we want to do some
@@ -278,14 +276,14 @@ var murk = (function(murk) {
   }
 
   // public api
-  pub.collectDom = recollectElems;
-  pub.emit = handleSubscribers;
-  pub.get = getModel;
-  pub.set = setModel;
-  pub.on = attachSubscriber;
-  pub.registerFilter = registerFilter;
-  if (opts.dev) pub.state = state;
+  this.collectDom = recollectElems;
+  this.emit = handleSubscribers;
+  this.get = getModel;
+  this.set = setModel;
+  this.on = attachSubscriber;
+  this.registerFilter = registerFilter;
+  if (opts.dev) this.state = state;
 
-  return pub;
+  return this;
 
 });
