@@ -4,13 +4,9 @@ var example = (function(w,d) {
   m = murk({
     dev: true,
     id: 'demo'
-  });
-
-  m.registerFilter('reverseStr', function(val) {
+  }).registerFilter('reverseStr', function(val) {
     return val.split('').reverse().join('');
-  });
-
-  m.registerFilter('highlightText', function(val) {
+  }).registerFilter('highlightText', function(val) {
     this.style.color = 'red';
   });
 
@@ -26,9 +22,7 @@ var example = (function(w,d) {
         el.style.display = 'inherit';
       }
       if (fn) return fn(null, true);
-    });
-    
-    m.set({
+    }).set({
       firstExample: 'this is',
       secondExample: 'data binding',
       thirdExample: 'murked.'
