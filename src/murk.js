@@ -20,9 +20,9 @@ var murk = (function(fn) {
 
   var opts = {
     selectorPrefix: 'data-murk',
-    trackCount: true,
     dev: false,
-    id: state.start
+    id: state.start,
+    defaultSubscribers: [elemBindingEvent, processFiltersEvent, repeaterEvent, trackCountEvent]
   };
 
   if (options) extend.call(opts, options);
@@ -147,7 +147,7 @@ var murk = (function(fn) {
   // context to the state object as `this`
   function handleSubscribers(key) {
     if (!state.subscribers.hasOwnProperty(key)) {
-      state.subscribers[key] = [elemBindingEvent, processFiltersEvent, repeaterEvent, trackCountEvent];
+      state.subscribers[key] = Array.prototype.slice.call(opts.defaultSubscribers);
     }
     var fns = Array.prototype.slice.call(state.subscribers[key]);
     while (fn = fns.shift()) fn.call(state.elems[key], key);
@@ -157,7 +157,7 @@ var murk = (function(fn) {
   function attachSubscriber(key, fn) {
     function subscribe(k) {
       if (!state.subscribers.hasOwnProperty(k)) {
-        state.subscribers[k] = [elemBindingEvent, processFiltersEvent, repeaterEvent, trackCountEvent];
+        state.subscribers[k] = Array.prototype.slice.call(opts.defaultSubscribers);
       }
       state.subscribers[k].push(fn);
     }
@@ -234,10 +234,8 @@ var murk = (function(fn) {
   function trackCountEvent() {
     var count;
     var attrs = attr(this);
-    if (opts.trackCount) {
-      count = attrs(opts.selectorPrefix + '-count');
-      attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
-    }
+    count = attrs(opts.selectorPrefix + '-count');
+    attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
   }
 
   // proccesses the filters added to any
@@ -246,23 +244,23 @@ var murk = (function(fn) {
     var attrs, filters, processFilter; 
     attrs = attr(this);
     if (attrs) {
-      processFilter = function(filter) {
-        var filteredVal, val;
-        if (state.filters.hasOwnProperty(filter) && 
-          state.model.hasOwnProperty(key)) {
-          filteredVal = (attrs(opts.selectorPrefix + '-filtered-val') ? 
-            dec(attrs(opts.selectorPrefix + '-filtered-val')) : 
-            null);
-          val = state.filters[filter].call(this, state.model[key]);
-          if (typeof val != 'undefined' && 
-            filteredVal != val) {
-            attrs(opts.selectorPrefix + '-filtered-val', enc(val));
-            this.innerHTML = val;
-          }
-        }
-      };
       filters = attrs(opts.selectorPrefix + '-filter');
       if (filters) {
+        processFilter = function(filter) {
+          var filteredVal, val;
+          if (state.filters.hasOwnProperty(filter) && 
+            state.model.hasOwnProperty(key)) {
+            filteredVal = (attrs(opts.selectorPrefix + '-filtered-val') ? 
+              dec(attrs(opts.selectorPrefix + '-filtered-val')) : 
+              null);
+            val = state.filters[filter].call(this, state.model[key]);
+            if (typeof val != 'undefined' && 
+              filteredVal != val) {
+              attrs(opts.selectorPrefix + '-filtered-val', enc(val));
+              this.innerHTML = val;
+            }
+          }
+        };
         if (filters.indexOf(',') != -1) filters = filters.split(',');
         if (!(filters instanceof Array)) filters = [filters];
         Array.prototype.forEach.call(filters, processFilter, this);
