@@ -12,6 +12,7 @@ var murk = (function(fn) {
     model: {},
     dom: [],
     elems: {},
+    repeats: {},
     subscribers: {},
     filters: {},
     keys: [],
@@ -22,7 +23,7 @@ var murk = (function(fn) {
     selectorPrefix: 'data-murk',
     dev: false,
     id: state.start,
-    defaultSubscribers: [handleRepeat, elemBindingEvent, processFiltersEvent, trackCountEvent]
+    defaultSubscribers: [elemBindingEvent, processFiltersEvent, trackCountEvent, handleRepeat]
   };
 
   if (options) extend(opts, options);
@@ -174,35 +175,56 @@ var murk = (function(fn) {
       var attrs = attr(this);
       var isRepeated = attrs(opts.selectorPrefix + '-repeat');
       if (isRepeated) {
+        if (!state.repeats.hasOwnProperty(key)) {
+          state.repeats[key] = {};
+          if (!state.repeats.hasOwnProperty('elems')) {
+            state.repeats[key].elems = {};
+          }
+        }
+        var repeatKeys = Object.keys(state.repeats[key].elems);
         var frag = document.createDocumentFragment();
+        if (repeatKeys.length > repeatModel.length) {
+          for(var o=repeatModel.length;o<repeatKeys.length;++o) {
+            state.repeats[key].elems[repeatKeys[o]].style.display = 'none';
+          }
+        }
         Array.prototype.forEach.call(repeatModel, function(obj, i) {
-          var newKey = (key + '.$' + i);
-          var domRef = (state.elems.hasOwnProperty(newKey) ? state.elems[newKey] : this.cloneNode(true));
+          var domRef, newKey = (key + '.$' + i);
+          if (!state.repeats[key].elems.hasOwnProperty(newKey)) {
+            state.repeats[key].elems[newKey] = this.cloneNode(true);
+          }
+          domRef = state.repeats[key].elems[newKey];
           var domAttrs = attr(domRef);
-          domAttrs(opts.selectorPrefix, 'rm');
-          if (typeof obj == 'object') {
-            state.elems[newKey] = domRef;
-            var nodes = domRef.getElementsByTagName('*');
-            Array.prototype.forEach.call(nodes, function(node) {
-              var nodeAttrs = attr(node);
-              if (nodeAttrs) {
-                var repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat');
-                if (repeatKey) {
-                  if (obj.hasOwnProperty(repeatKey)) {
-                    node.innerHTML = obj[repeatKey];
+          if (domAttrs) {
+            domAttrs(opts.selectorPrefix, 'rm');
+            domAttrs(opts.selectorPrefix + '-parent', key);
+            if (typeof obj == 'object') {
+              var nodes = domRef.getElementsByTagName('*');
+              Array.prototype.forEach.call(nodes, function(node) {
+                var nodeAttrs = attr(node);
+                if (nodeAttrs) {
+                  var repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat');
+                  if (!nodeAttrs(opts.selectorPrefix + '-key')) {
+                    nodeAttrs(opts.selectorPrefix + '-key', newKey);
+                  }
+                  if (repeatKey) {
+                    node.parentNode.style.display = 'inherit';
+                    if (obj.hasOwnProperty(repeatKey)) {
+                      node.innerHTML = obj[repeatKey];
+                    }
                   }
                 }
-              }
-            }, this);
-          } else {
-            state.elems[newKey] = domRef;
-            domRef.innerHTML = obj;
+              }, this);
+            } else {
+              domRef.innerHTML = obj;
+            }
+            frag.appendChild(domRef);
           }
-          frag.appendChild(domRef);
         }, this);
         if (state.elems.hasOwnProperty(key)) this.parentNode.appendChild(frag);
       }
     }
+    return true;
   }
 
   // we want to keep track of how many
@@ -263,15 +285,15 @@ var murk = (function(fn) {
   // this...
   function elemBindingEvent(key) {
     var attrs = attr(this);
-    // encode and set a reference of our 
-    // newly bound value
-    attrs(opts.selectorPrefix + '-val', enc(state.model[key]));
     // keep visual refence we're bound
     // to this elem
     attrs(opts.selectorPrefix + '-bound', true);
     // set innerText of value to elem
     if (!(state.model[key] instanceof Array) && 
       typeof state.model[key] != 'object') {
+      // encode and set a reference of our 
+      // newly bound value
+      attrs(opts.selectorPrefix + '-val', enc(state.model[key]));
       this.innerHTML = state.model[key];
     }
   }
