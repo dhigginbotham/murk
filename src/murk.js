@@ -1,6 +1,6 @@
 var murk = (function(fn) {
   if (typeof module != 'undefined' && module.exports) {
-    return module.exports = fn;
+    module.exports = fn;
   } else {
     return fn;
   }
@@ -255,14 +255,14 @@ var murk = (function(fn) {
     if (attrs) {
       processFilter = function(filter) {
         var filteredVal, val;
-        if (state.filters.hasOwnProperty(filter) 
-          && state.model.hasOwnProperty(key)) {
-          filteredVal = (attrs(opts.selectorPrefix + '-filtered-val') 
-            ? dec(attrs(opts.selectorPrefix + '-filtered-val')) 
-            : null);
+        if (state.filters.hasOwnProperty(filter) && 
+          state.model.hasOwnProperty(key)) {
+          filteredVal = (attrs(opts.selectorPrefix + '-filtered-val') ? 
+            dec(attrs(opts.selectorPrefix + '-filtered-val')) : 
+            null);
           val = state.filters[filter].call(this, state.model[key]);
-          if (typeof val != 'undefined' 
-            && filteredVal != val) {
+          if (typeof val != 'undefined' && 
+            filteredVal != val) {
             attrs(opts.selectorPrefix + '-filtered-val', enc(val));
             this.innerHTML = val;
           }
