@@ -141,7 +141,6 @@ var murk = (function(fn) {
         }
       }
     }
-    return false;
   }
 
   // handles our subscribers, proves
@@ -150,18 +149,8 @@ var murk = (function(fn) {
     if (!state.subscribers.hasOwnProperty(key)) {
       state.subscribers[key] = [elemBindingEvent, processFiltersEvent, trackCountEvent];
     }
-    var copy = Array.prototype.slice.call(state.subscribers[key]);
-    // recurse through subscriber calls
-    function processSubscribers(fn, done) {
-      fn.call(state.elems[key], key, function(err, success) {
-        if (copy.length) {
-          if (err) return done(err, copy);
-          return processSubscribers(copy.shift(), done);
-        }
-        return (done ? done(null, true) : true);
-      });
-    }
-    processSubscribers(copy.shift());
+    var fns = Array.prototype.slice.call(state.subscribers[key]);
+    while (fn = fns.shift()) fn.call(state.elems[key], key);
   }
 
   // attaches subsciber based on key :D
@@ -183,19 +172,18 @@ var murk = (function(fn) {
   // we want to keep track of how many
   // times we're interacting with our 
   // elems
-  function trackCountEvent(key, fn) {
+  function trackCountEvent(key) {
     var count;
     var attrs = attr(this);
     if (opts.trackCount) {
       count = attrs(opts.selectorPrefix + '-count');
       attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
     }
-    if (fn) return fn(null, true);
   }
 
   // proccesses the filters added to any
   // given bound elem
-  function processFiltersEvent(key, fn) {
+  function processFiltersEvent(key) {
     var attrs, filters, processFilter; 
     attrs = attr(this);
     if (attrs) {
@@ -213,17 +201,20 @@ var murk = (function(fn) {
             this.innerHTML = val;
           }
         }
-      }.bind(this);
+      };
       filters = attrs(opts.selectorPrefix + '-filter');
       if (filters) {
         if (filters.indexOf(',') != -1) filters = filters.split(',');
         if (!(filters instanceof Array)) filters = [filters];
-        Array.prototype.map.call(filters, processFilter);
+        Array.prototype.map.call(filters, processFilter, this);
       }
     }
-    if (fn) return fn(null, true);
   }
 
+  // public fn to setup new filters,
+  // they are globally shared, and will
+  // overwrite any previously defined
+  // filters.
   function registerFilter(key, fn) {
     if (key && fn) {
       state.filters[key] = fn;
@@ -236,7 +227,7 @@ var murk = (function(fn) {
   // however it's a lot of opinionated ideas so
   // keeping them as an event allows you to remove
   // this...
-  function elemBindingEvent(key, fn) {
+  function elemBindingEvent(key) {
     var attrs = attr(this);
     // encode and set a reference of our 
     // newly bound value
@@ -246,7 +237,6 @@ var murk = (function(fn) {
     attrs(opts.selectorPrefix + '-bound', true);
     // set innerText of value to elem
     this.innerHTML = state.model[key];
-    if (fn) return fn(null, true);
   }
   
   // just a wrapper for elem.[set/get]Attribute()
