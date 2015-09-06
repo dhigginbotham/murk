@@ -168,12 +168,26 @@ var murk = (function(fn) {
     return this;
   }
 
+  function templateRepeat(node) {
+    var nodeAttrs = attr(node);
+    if (nodeAttrs) {
+      var repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat');
+      if (repeatKey) {
+        node.parentNode.style.display = 'inherit';
+        if (this.hasOwnProperty(repeatKey)) {
+          node.innerHTML = this[repeatKey];
+        }
+      }
+    }
+  }
+
   // this is better ;D
   function handleRepeat(key) {
     if (state.model[key] instanceof Array) {
-      var repeatModel = state.model[key];
-      var attrs = attr(this);
-      var isRepeated = attrs(opts.selectorPrefix + '-repeat');
+      var repeatModel, attrs, isRepeated, repeatKeys, frag, processRepeats, isNew = false;
+      repeatModel = state.model[key];
+      attrs = attr(this);
+      isRepeated = attrs(opts.selectorPrefix + '-repeat');
       if (isRepeated) {
         if (!state.repeats.hasOwnProperty(key)) {
           state.repeats[key] = {};
@@ -181,47 +195,37 @@ var murk = (function(fn) {
             state.repeats[key].elems = {};
           }
         }
-        var repeatKeys = Object.keys(state.repeats[key].elems);
-        var frag = document.createDocumentFragment();
+        frag = document.createDocumentFragment();
+        repeatKeys = Object.keys(state.repeats[key].elems);
         if (repeatKeys.length > repeatModel.length) {
           for(var o=repeatModel.length;o<repeatKeys.length;++o) {
             state.repeats[key].elems[repeatKeys[o]].style.display = 'none';
           }
         }
-        Array.prototype.forEach.call(repeatModel, function(obj, i) {
-          var domRef, newKey = (key + '.$' + i);
+        processRepeats = function(current, i) {
+          var domRef, domAttrs, nodes, newKey = (key + '.$' + i);
           if (!state.repeats[key].elems.hasOwnProperty(newKey)) {
             state.repeats[key].elems[newKey] = this.cloneNode(true);
+            isNew = true;
           }
           domRef = state.repeats[key].elems[newKey];
-          var domAttrs = attr(domRef);
+          domAttrs = attr(domRef);
           if (domAttrs) {
             domAttrs(opts.selectorPrefix, 'rm');
+            domAttrs(opts.selectorPrefix + '-repeat', 'rm');
             domAttrs(opts.selectorPrefix + '-parent', key);
-            if (typeof obj == 'object') {
-              var nodes = domRef.getElementsByTagName('*');
-              Array.prototype.forEach.call(nodes, function(node) {
-                var nodeAttrs = attr(node);
-                if (nodeAttrs) {
-                  var repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat');
-                  if (!nodeAttrs(opts.selectorPrefix + '-key')) {
-                    nodeAttrs(opts.selectorPrefix + '-key', newKey);
-                  }
-                  if (repeatKey) {
-                    node.parentNode.style.display = 'inherit';
-                    if (obj.hasOwnProperty(repeatKey)) {
-                      node.innerHTML = obj[repeatKey];
-                    }
-                  }
-                }
-              }, this);
+            domAttrs(opts.selectorPrefix + '-index', i);
+            if (typeof current == 'object') {
+              nodes = domRef.getElementsByTagName('*');
+              Array.prototype.forEach.call(nodes, templateRepeat, current);
             } else {
-              domRef.innerHTML = obj;
+              domRef.innerHTML = current;
             }
-            frag.appendChild(domRef);
+            if (isNew) frag.appendChild(domRef);
           }
-        }, this);
-        if (state.elems.hasOwnProperty(key)) this.parentNode.appendChild(frag);
+        };
+        Array.prototype.forEach.call(repeatModel, processRepeats, this);
+        if (state.repeats.hasOwnProperty(key) && isNew) this.parentNode.appendChild(frag);
       }
     }
     return true;
