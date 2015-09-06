@@ -17,7 +17,11 @@
     <div data-murk="secondExample"></div>
     <div data-murk="thirdExample" data-murk-filter="highlightText"></div>
     <div data-murk="fourthExample" data-murk-filter="reverseStr,highlightText">embedded example</div>
-    <div data-murk="repeatedExample" data-murk-repeat="true"></div>
+    <div data-murk="repeatedExample" data-murk-repeat="true">
+      <div data-murk-repeat="name"></div>
+      <div data-murk-repeat="age"></div>
+    </div>
+    <div data-murk="secondRepeatedExample" data-murk-repeat="true"></div>
   </div>
 
   <div class="form-row">
@@ -68,7 +72,7 @@
     id: 'demo'
   }).registerFilter('reverseStr', function(val) {
     return val.split('').reverse().join('');
-  }).registerFilter('highlightText', function(val) {
+  }).registerFilter('highlightText', function() {
     this.style.color = 'red';
   });
 
@@ -76,7 +80,7 @@
 
     modelOutput = d.getElementById('model');
 
-    m.on('repeatedExample', function(key) {
+    m.on('repeatedExample', function() {
       modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
     }).on(['firstExample','secondExample','thirdExample','fourthExample'], function(key) {
       var count = this.getAttribute('data-murk-count');
@@ -91,12 +95,19 @@
       firstExample: 'this is',
       secondExample: 'data binding',
       thirdExample: 'murked.',
-      repeatedExample: ['holy','kitteh']
+      repeatedExample: [{
+        name: 'polly',
+        age: 29
+      },{
+        name: 'jolly',
+        age: 52
+      }],
+      secondRepeatedExample: ['happy', 'cat']
     });
 
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
 
-    $('[data-murk-example]').on('keyup blur', function(e) {
+    $('[data-murk-example]').on('keyup blur', function() {
       m.set(this.id, this.value); 
       modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
     });

@@ -1,1 +1,317 @@
-var murk=function(e){return"undefined"!=typeof module&&module.exports?void(module.exports=e):e}(function(e){function t(e,t,r){if("string"!=typeof t&&"undefined"==typeof r&&(r=t,t=r),r="undefined"==typeof r?!0:!1,"undefined"!=typeof t&&"string"==typeof e){if(y.model[e]=t,y.elems.hasOwnProperty(e))return i(y.elems[e])}else r?m.call(y.model,e):y.model=e;return i(),this}function r(e){return"undefined"!=typeof e?y.model.hasOwnProperty(e)?y.model[e]:null:y.model}function i(e){var t;"undefined"!=typeof e?s(e):(t=y.dom.length?y.dom:n(),Array.prototype.forEach.call(t,s))}function o(e){e="undefined"==typeof e?document:e;var t=n(e);Array.prototype.forEach.call(t,s)}function n(e){return e="undefined"==typeof e?document:e,e.getElementsByTagName("*")}function s(e){var t,r;t=p(e),r=t(v.selectorPrefix),r&&(t(v.selectorPrefix+"-id")||t(v.selectorPrefix+"-id",v.id),t(v.selectorPrefix+"-id")==v.id&&(y.elems.hasOwnProperty(r)||(y.elems[r]=e,~y.keys.indexOf(r)||(y.keys.push(r),y.dom.push(e)),e.innerHTML&&!y.model.hasOwnProperty(r)&&(y.model[r]=e.innerHTML)),y.model.hasOwnProperty(r)?P(t(v.selectorPrefix+"-val"))!=y.model[r]&&l(r):t(v.selectorPrefix+"-bound",!1)))}function l(e){y.subscribers.hasOwnProperty(e)||(y.subscribers[e]=Array.prototype.slice.call(v.defaultSubscribers));for(var t=Array.prototype.slice.call(y.subscribers[e]);fn=t.shift();)fn.call(y.elems[e],e)}function d(e,t){function r(e){y.subscribers.hasOwnProperty(e)||(y.subscribers[e]=Array.prototype.slice.call(v.defaultSubscribers)),y.subscribers[e].push(t)}return e instanceof Array?Array.prototype.forEach.call(e,r):r(e),this}function f(e){if(y.model[e]instanceof Array){var t=p(this);if(t(v.selectorPrefix+"-repeat"))if(this.hasChildNodes()){var r=this.childNodes.length,i=y.model[e].length;if(r>i)for(var o=i;r>o;++o)this.childNodes[o].style.display="none";Array.prototype.forEach.call(y.model[e],function(e,t){if(r>t){var i=P(this.childNodes[t].getAttribute(v.selectorPrefix+"-repeated-val"));i!=e&&(this.childNodes[t].setAttribute(v.selectorPrefix+"-repeated-val",b(e)),this.childNodes[t].innerHTML=e),this.childNodes[t].style.display="inherit"}else{var o=document.createElement(this.nodeName);o.setAttribute(v.selectorPrefix+"-repeated-val",b(e)),o.innerHTML=e,this.appendChild(o)}},this)}else{var n=document.createDocumentFragment();Array.prototype.forEach.call(y.model[e],function(e){var t=document.createElement(this.nodeName);t.setAttribute(v.selectorPrefix+"-repeated-val",b(e)),t.innerHTML=e,n.appendChild(t)},this),this.appendChild(n)}}}function a(){var e,t=p(this);e=t(v.selectorPrefix+"-count"),t(v.selectorPrefix+"-count",e?parseInt(e,0)+1:1)}function c(e){var t,r,i;t=p(this),t&&(r=t(v.selectorPrefix+"-filter"),r&&(i=function(r){var i,o;y.filters.hasOwnProperty(r)&&y.model.hasOwnProperty(e)&&(i=t(v.selectorPrefix+"-filtered-val")?P(t(v.selectorPrefix+"-filtered-val")):null,o=y.filters[r].call(this,y.model[e]),"undefined"!=typeof o&&i!=o&&(t(v.selectorPrefix+"-filtered-val",b(o)),this.innerHTML=o))},-1!=r.indexOf(",")&&(r=r.split(",")),r instanceof Array||(r=[r]),Array.prototype.forEach.call(r,i,this)))}function u(e,t){return e&&t&&(y.filters[e]=t),this}function h(e){var t=p(this);t(v.selectorPrefix+"-val",b(y.model[e])),t(v.selectorPrefix+"-bound",!0),y.model[e]instanceof Array||(this.innerHTML=y.model[e])}function p(e){return"undefined"!=typeof e?function(e,t){return"undefined"==typeof t?this.getAttribute(e):this.setAttribute(e,t)}.bind(e):null}function m(e){if("object"==typeof this)for(var t in e)e.hasOwnProperty(t)&&(this[t]=e[t])}if(!(this instanceof murk))return new murk(e);var y={model:{},dom:[],elems:{},subscribers:{},filters:{},keys:[],start:Date.now()},v={selectorPrefix:"data-murk",dev:!1,id:y.start,defaultSubscribers:[h,c,f,a]};e&&m.call(v,e);var b=encodeURIComponent,P=decodeURIComponent;return this.collectDom=o,this.emit=l,this.get=r,this.set=t,this.on=d,this.registerFilter=u,v.dev&&(this.state=y),this});
+var murk = (function(fn) {
+  if (typeof module != 'undefined' && module.exports) {
+    module.exports = fn;
+  } else {
+    return fn;
+  }
+})(function(options) {
+  if (!(this instanceof murk)) return new murk(options);
+  // state reference, mostly for 
+  // dev/internal use and context
+  var state = {
+    model: {},
+    dom: [],
+    elems: {},
+    subscribers: {},
+    filters: {},
+    keys: [],
+    start: Date.now()
+  };
+
+  var opts = {
+    selectorPrefix: 'data-murk',
+    dev: false,
+    id: state.start,
+    defaultSubscribers: [handleRepeat, elemBindingEvent, processFiltersEvent, trackCountEvent]
+  };
+
+  if (options) extend(opts, options);
+
+  var enc = encodeURIComponent;
+  var dec = decodeURIComponent;
+
+  // only way to interact with our 
+  // model, this way we can use this
+  // loosely as an event emitter
+  function setModel(obj, str, merge) {
+    // allow str to be optional, slid
+    // merge over, set str to undefined
+    // so everything else works as intended
+    if (typeof str == 'boolean' && typeof merge == 'undefined') {
+      merge = str;
+      str = merge;
+    }
+    // we'll always set merge to true,
+    // this way you're not overwriting
+    // the model unless you intend to
+    merge = (typeof merge != 'undefined' ? merge : true);
+    if (typeof str != 'undefined' && typeof obj == 'string') {
+      state.model[obj] = str;
+      // if we've set this elem before we'll
+      // pass that reference if possible to
+      // improve performance
+      if (state.elems.hasOwnProperty(obj)) {
+        return collectElems(state.elems[obj]);
+      }
+    } else {
+      if (merge) {
+        extend(state.model, obj);
+      } else {
+        state.model = obj;
+      }
+    }
+    collectElems();
+    return this;
+  }
+
+  // gets the model, yeye
+  function getModel(key) {
+    if (typeof key != 'undefined') {
+      if (state.model.hasOwnProperty(key)) {
+        return state.model[key];
+      }
+      return null;
+    }
+    return state.model;
+  }
+
+  // collects elems, allows you to
+  // pass context so you can stay
+  // super snappy, needs improvements.
+  function collectElems(ctx) {
+    var dom;
+    if (typeof ctx != 'undefined') {
+      bindElem(ctx);
+    } else {
+      dom = (!state.dom.length ? collectDom() : state.dom);
+      Array.prototype.forEach.call(dom, bindElem);
+    }
+  }
+
+  function recollectElems(ctx) {
+    ctx = (typeof ctx == 'undefined' ? document : ctx);
+    var dom = collectDom(ctx);
+    Array.prototype.forEach.call(dom, bindElem);
+  }
+
+  // collects dom from context provided,
+  // falls back to document
+  function collectDom(ctx) {
+    ctx = (typeof ctx == 'undefined' ? document : ctx);
+    return ctx.getElementsByTagName('*');
+  }
+
+  // binds elem from model, simple things
+  function bindElem(elem) {
+    var attrs, key;
+    attrs = attr(elem);
+    key = attrs(opts.selectorPrefix);
+    if (key) {
+      // if we dont have an id set already
+      // we set one here so that we dont step
+      // on any other models
+      if (!attrs(opts.selectorPrefix + '-id')) {
+        attrs(opts.selectorPrefix + '-id', opts.id);
+      }
+      if (attrs(opts.selectorPrefix + '-id') == opts.id) {
+        if (!state.elems.hasOwnProperty(key)) {
+          state.elems[key] = elem;
+          // check if keys already being bound,
+          // if not keep track of them
+          if (!~state.keys.indexOf(key)) {
+            state.keys.push(key);
+            state.dom.push(elem);
+          }
+          // lets allow databinding of embedded values..
+          if (elem.innerHTML && !state.model.hasOwnProperty(key)) {
+            state.model[key] = elem.innerHTML;
+          }
+        }
+        if (state.model.hasOwnProperty(key)) {
+          // we only want to modify elems that 
+          // have changed their values
+          if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key]) {
+            // keep track of our elems to use
+            // later as reference
+            // handle any subscribers on this elem
+            handleSubscribers(key);
+          }
+        } else {
+          attrs(opts.selectorPrefix + '-bound', false);
+        }
+      }
+    }
+  }
+
+  // handles our subscribers, proves
+  // context to the state object as `this`
+  function handleSubscribers(key) {
+    if (!state.subscribers.hasOwnProperty(key)) {
+      state.subscribers[key] = Array.prototype.slice.call(opts.defaultSubscribers);
+    }
+    var fns = Array.prototype.slice.call(state.subscribers[key]);
+    while (fn = fns.shift()) fn.call(state.elems[key], key);
+  }
+
+  // attaches subsciber based on key :D
+  function attachSubscriber(key, fn) {
+    function subscribe(k) {
+      if (!state.subscribers.hasOwnProperty(k)) {
+        state.subscribers[k] = Array.prototype.slice.call(opts.defaultSubscribers);
+      }
+      state.subscribers[k].push(fn);
+    }
+    if (!(key instanceof Array)) key = [key];
+    Array.prototype.forEach.call(key, subscribe);
+    return this;
+  }
+
+  // i still dont wanna do it this way ~.~
+  function handleRepeat(key) {
+    if (state.model[key] instanceof Array) {
+      var repeatModel = state.model[key];
+      var attrs = attr(this);
+      var isRepeated = attrs(opts.selectorPrefix + '-repeat');
+      if (isRepeated) {
+        var frag = document.createDocumentFragment();
+        Array.prototype.forEach.call(repeatModel, function(obj, i) {
+          var newKey = (key + '.$' + i);
+          var domRef = (state.elems.hasOwnProperty(newKey) ? state.elems[newKey] : this.cloneNode(true));
+          var domAttrs = attr(domRef);
+          state.model[newKey] = obj;
+          domAttrs(opts.selectorPrefix, newKey);
+          if (typeof obj == 'object') {
+            var nodes = domRef.getElementsByTagName('*');
+            Array.prototype.forEach.call(nodes, function(node) {
+              var nodeAttrs = attr(node);
+              if (nodeAttrs) {
+                var repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat');
+                if (repeatKey) {
+                  if (obj.hasOwnProperty(repeatKey)) {
+                    node.innerHTML = obj[repeatKey];
+                  }
+                }
+              }
+            }, this);
+          } else {
+            state.model[newKey] = obj;
+            domRef.innerHTML = obj;
+          }
+          frag.appendChild(domRef);
+        }, this);
+        this.parentNode.appendChild(frag);
+      }
+    }
+  }
+
+  // we want to keep track of how many
+  // times we're interacting with our 
+  // elems
+  function trackCountEvent() {
+    var count;
+    var attrs = attr(this);
+    count = attrs(opts.selectorPrefix + '-count');
+    attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
+  }
+
+  // proccesses the filters added to any
+  // given bound elem
+  function processFiltersEvent(key) {
+    var attrs, filters, processFilter; 
+    attrs = attr(this);
+    if (attrs) {
+      filters = attrs(opts.selectorPrefix + '-filter');
+      if (filters) {
+        processFilter = function(filter) {
+          var filteredVal, val;
+          if (state.filters.hasOwnProperty(filter) && 
+            state.model.hasOwnProperty(key)) {
+            filteredVal = (attrs(opts.selectorPrefix + '-filtered-val') ? 
+              dec(attrs(opts.selectorPrefix + '-filtered-val')) : 
+              null);
+            val = state.filters[filter].call(this, state.model[key]);
+            if (typeof val != 'undefined' && 
+              filteredVal != val) {
+              attrs(opts.selectorPrefix + '-filtered-val', enc(val));
+              this.innerHTML = val;
+            }
+          }
+        };
+        if (filters.indexOf(',') != -1) filters = filters.split(',');
+        if (!(filters instanceof Array)) filters = [filters];
+        Array.prototype.forEach.call(filters, processFilter, this);
+      }
+    }
+  }
+
+  // public fn to setup new filters,
+  // they are globally shared, and will
+  // overwrite any previously defined
+  // filters.
+  function registerFilter(key, fn) {
+    if (key && fn) {
+      state.filters[key] = fn;
+    }
+    return this;
+  }
+
+  // when we bind elements we want to do some
+  // stuff to them to get some real databinding
+  // however it's a lot of opinionated ideas so
+  // keeping them as an event allows you to remove
+  // this...
+  function elemBindingEvent(key) {
+    var attrs = attr(this);
+    // encode and set a reference of our 
+    // newly bound value
+    attrs(opts.selectorPrefix + '-val', enc(state.model[key]));
+    // keep visual refence we're bound
+    // to this elem
+    attrs(opts.selectorPrefix + '-bound', true);
+    // set innerText of value to elem
+    if (!(state.model[key] instanceof Array) && 
+      typeof state.model[key] != 'object') {
+      this.innerHTML = state.model[key];
+    }
+  }
+  
+  // just a wrapper for elem.[set/get]Attribute()
+  function attr(elem) {
+    if (typeof elem != 'undefined') {
+      return function(key, val) {
+        if(typeof val == 'undefined') {
+          return this.getAttribute(key);
+        } else if (val == 'rm') {
+          return this.removeAttribute(key);
+        } else {
+          return this.setAttribute(key, val);
+        }
+      }.bind(elem);
+    } else {
+      return null;
+    }
+  }
+
+  // simple extend fn
+  function extend(parent, child) {
+    if (typeof parent == 'object') {
+      for (var key in child) {
+        if (child.hasOwnProperty(key)) {
+          parent[key] = child[key];
+        }
+      }
+    }
+  }
+
+  // public api
+  this.collectDom = recollectElems;
+  this.emit = handleSubscribers;
+  this.get = getModel;
+  this.set = setModel;
+  this.on = attachSubscriber;
+  this.registerFilter = registerFilter;
+  if (opts.dev) this.state = state;
+
+  return this;
+
+});

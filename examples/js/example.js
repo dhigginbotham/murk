@@ -6,7 +6,7 @@ var example = (function(w,d) {
     id: 'demo'
   }).registerFilter('reverseStr', function(val) {
     return val.split('').reverse().join('');
-  }).registerFilter('highlightText', function(val) {
+  }).registerFilter('highlightText', function() {
     this.style.color = 'red';
   });
 
@@ -14,7 +14,7 @@ var example = (function(w,d) {
 
     modelOutput = d.getElementById('model');
 
-    m.on('repeatedExample', function(key) {
+    m.on('repeatedExample', function() {
       modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
     }).on(['firstExample','secondExample','thirdExample','fourthExample'], function(key) {
       var count = this.getAttribute('data-murk-count');
@@ -29,12 +29,19 @@ var example = (function(w,d) {
       firstExample: 'this is',
       secondExample: 'data binding',
       thirdExample: 'murked.',
-      repeatedExample: ['holy','kitteh']
+      repeatedExample: [{
+        name: 'polly',
+        age: 29
+      },{
+        name: 'jolly',
+        age: 52
+      }],
+      secondRepeatedExample: ['happy', 'cat']
     });
 
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
 
-    $('[data-murk-example]').on('keyup blur', function(e) {
+    $('[data-murk-example]').on('keyup blur', function() {
       m.set(this.id, this.value); 
       modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
     });

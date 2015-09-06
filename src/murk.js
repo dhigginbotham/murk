@@ -22,10 +22,10 @@ var murk = (function(fn) {
     selectorPrefix: 'data-murk',
     dev: false,
     id: state.start,
-    defaultSubscribers: [elemBindingEvent, processFiltersEvent, repeaterEvent, trackCountEvent]
+    defaultSubscribers: [handleRepeat, elemBindingEvent, processFiltersEvent, trackCountEvent]
   };
 
-  if (options) extend.call(opts, options);
+  if (options) extend(opts, options);
 
   var enc = encodeURIComponent;
   var dec = decodeURIComponent;
@@ -37,14 +37,14 @@ var murk = (function(fn) {
     // allow str to be optional, slid
     // merge over, set str to undefined
     // so everything else works as intended
-    if (typeof str != 'string' && typeof merge == 'undefined') {
+    if (typeof str == 'boolean' && typeof merge == 'undefined') {
       merge = str;
       str = merge;
     }
     // we'll always set merge to true,
     // this way you're not overwriting
     // the model unless you intend to
-    merge = (typeof merge == 'undefined' ? true : false);
+    merge = (typeof merge != 'undefined' ? merge : true);
     if (typeof str != 'undefined' && typeof obj == 'string') {
       state.model[obj] = str;
       // if we've set this elem before we'll
@@ -55,7 +55,7 @@ var murk = (function(fn) {
       }
     } else {
       if (merge) {
-        extend.call(state.model, obj);
+        extend(state.model, obj);
       } else {
         state.model = obj;
       }
@@ -161,69 +161,45 @@ var murk = (function(fn) {
       }
       state.subscribers[k].push(fn);
     }
-    if (key instanceof Array) {
-      Array.prototype.forEach.call(key, subscribe);
-    } else {
-      subscribe(key);
-    }
+    if (!(key instanceof Array)) key = [key];
+    Array.prototype.forEach.call(key, subscribe);
     return this;
   }
 
-  // i dont know if this is how i want
-  // to handle repeats, but for now yes
-  function repeaterEvent(key) {
+  // i still dont wanna do it this way ~.~
+  function handleRepeat(key) {
     if (state.model[key] instanceof Array) {
+      var repeatModel = state.model[key];
       var attrs = attr(this);
-      if (attrs(opts.selectorPrefix + '-repeat')) {
-        // we want to always reuse children 
-        // if we can...
-        if (this.hasChildNodes()) {
-          var nodesLn = this.childNodes.length;
-          var modelLn = state.model[key].length;
-          // if we have more elems than we have 
-          // model vars, this takes the end of our
-          // nodes and only hides those.
-          if (nodesLn > modelLn) {
-            for (var i=modelLn;i<nodesLn;++i) {
-              this.childNodes[i].style.display = 'none';
-            }
-          }
-          // this is how we're going to only 
-          // reuse or create new nodes, this
-          // should help keep the footprint
-          // low. 
-          Array.prototype.forEach.call(state.model[key], function(val, i) {
-            if (i < nodesLn) {
-              var lastVal = dec(this.childNodes[i].getAttribute(opts.selectorPrefix + '-repeated-val'));
-              if (lastVal != val) {
-                this.childNodes[i].setAttribute(opts.selectorPrefix + '-repeated-val', enc(val));
-                this.childNodes[i].innerHTML = val;
+      var isRepeated = attrs(opts.selectorPrefix + '-repeat');
+      if (isRepeated) {
+        var frag = document.createDocumentFragment();
+        Array.prototype.forEach.call(repeatModel, function(obj, i) {
+          var newKey = (key + '.$' + i);
+          var domRef = (state.elems.hasOwnProperty(newKey) ? state.elems[newKey] : this.cloneNode(true));
+          var domAttrs = attr(domRef);
+          state.model[newKey] = obj;
+          domAttrs(opts.selectorPrefix, newKey);
+          if (typeof obj == 'object') {
+            var nodes = domRef.getElementsByTagName('*');
+            Array.prototype.forEach.call(nodes, function(node) {
+              var nodeAttrs = attr(node);
+              if (nodeAttrs) {
+                var repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat');
+                if (repeatKey) {
+                  if (obj.hasOwnProperty(repeatKey)) {
+                    node.innerHTML = obj[repeatKey];
+                  }
+                }
               }
-              this.childNodes[i].style.display = 'inherit';
-            // we can't reuse anymore elems, 
-            // so lets create new ones, yey
-            } else {
-              var node = document.createElement(this.nodeName);
-              node.setAttribute(opts.selectorPrefix + '-repeated-val', enc(val));
-              node.innerHTML = val;
-              this.appendChild(node);
-            }
-          }, this);
-        // we don't have any children to 
-        // reuse, so we need to make some.
-        // we'll only create the same elements 
-        // you bound them to, i suggest 
-        // using divs.
-        } else {
-          var doc = document.createDocumentFragment();
-          Array.prototype.forEach.call(state.model[key], function(val) {
-            var node = document.createElement(this.nodeName);
-            node.setAttribute(opts.selectorPrefix + '-repeated-val', enc(val));
-            node.innerHTML = val;
-            doc.appendChild(node);
-          }, this);
-          this.appendChild(doc);
-        }
+            }, this);
+          } else {
+            state.model[newKey] = obj;
+            domRef.innerHTML = obj;
+          }
+          frag.appendChild(domRef);
+        }, this);
+        this.parentNode.appendChild(frag);
       }
     }
   }
@@ -293,7 +269,8 @@ var murk = (function(fn) {
     // to this elem
     attrs(opts.selectorPrefix + '-bound', true);
     // set innerText of value to elem
-    if (!(state.model[key] instanceof Array)) {
+    if (!(state.model[key] instanceof Array) && 
+      typeof state.model[key] != 'object') {
       this.innerHTML = state.model[key];
     }
   }
@@ -304,6 +281,8 @@ var murk = (function(fn) {
       return function(key, val) {
         if(typeof val == 'undefined') {
           return this.getAttribute(key);
+        } else if (val == 'rm') {
+          return this.removeAttribute(key);
         } else {
           return this.setAttribute(key, val);
         }
@@ -314,11 +293,11 @@ var murk = (function(fn) {
   }
 
   // simple extend fn
-  function extend(obj) {
-    if (typeof this == 'object') {
-      for (var key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          this[key] = obj[key];
+  function extend(parent, child) {
+    if (typeof parent == 'object') {
+      for (var key in child) {
+        if (child.hasOwnProperty(key)) {
+          parent[key] = child[key];
         }
       }
     }

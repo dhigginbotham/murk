@@ -10,9 +10,9 @@ var gulp = require('gulp'),
 gulp.task('min', function() {
   return gulp.src('./src/murk.js')
     .on('error', gutil.log)
+    .pipe(gulp.dest('./examples/js'))
     .pipe(guglify())
-    .pipe(gulp.dest('./dist'))
-    .pipe(gulp.dest('./examples/js'));
+    .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('zip', function() {
