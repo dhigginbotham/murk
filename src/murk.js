@@ -130,7 +130,8 @@ var murk = (function(fn) {
         if (state.model.hasOwnProperty(key)) {
           // we only want to modify elems that 
           // have changed their values
-          if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key]) {
+          if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key] ||
+            typeof state.model[key] == 'object') {
             // keep track of our elems to use
             // later as reference
             // handle any subscribers on this elem
@@ -166,7 +167,7 @@ var murk = (function(fn) {
     return this;
   }
 
-  // i still dont wanna do it this way ~.~
+  // this is better ;D
   function handleRepeat(key) {
     if (state.model[key] instanceof Array) {
       var repeatModel = state.model[key];
@@ -178,9 +179,9 @@ var murk = (function(fn) {
           var newKey = (key + '.$' + i);
           var domRef = (state.elems.hasOwnProperty(newKey) ? state.elems[newKey] : this.cloneNode(true));
           var domAttrs = attr(domRef);
-          state.model[newKey] = obj;
-          domAttrs(opts.selectorPrefix, newKey);
+          domAttrs(opts.selectorPrefix, 'rm');
           if (typeof obj == 'object') {
+            state.elems[newKey] = domRef;
             var nodes = domRef.getElementsByTagName('*');
             Array.prototype.forEach.call(nodes, function(node) {
               var nodeAttrs = attr(node);
@@ -194,12 +195,12 @@ var murk = (function(fn) {
               }
             }, this);
           } else {
-            state.model[newKey] = obj;
+            state.elems[newKey] = domRef;
             domRef.innerHTML = obj;
           }
           frag.appendChild(domRef);
         }, this);
-        this.parentNode.appendChild(frag);
+        if (state.elems.hasOwnProperty(key)) this.parentNode.appendChild(frag);
       }
     }
   }
