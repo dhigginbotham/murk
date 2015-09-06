@@ -185,7 +185,6 @@ var murk = (function(fn) {
           // nodes and only hides those.
           if (nodesLn > modelLn) {
             for (var i=modelLn;i<nodesLn;++i) {
-              this.childNodes[i].removeAttribute(opts.selectorPrefix + '-repeated-index');
               this.childNodes[i].style.display = 'none';
             }
           }
@@ -196,8 +195,6 @@ var murk = (function(fn) {
           Array.prototype.forEach.call(state.model[key], function(val, i) {
             if (i < nodesLn) {
               var lastVal = dec(this.childNodes[i].getAttribute(opts.selectorPrefix + '-repeated-val'));
-              this.childNodes[i].setAttribute(opts.selectorPrefix + '-repeated', key);
-              this.childNodes[i].setAttribute(opts.selectorPrefix + '-repeated-index', i);
               if (lastVal != val) {
                 this.childNodes[i].setAttribute(opts.selectorPrefix + '-repeated-val', enc(val));
                 this.childNodes[i].innerHTML = val;
@@ -207,8 +204,6 @@ var murk = (function(fn) {
             // so lets create new ones, yey
             } else {
               var node = document.createElement(this.nodeName);
-              node.setAttribute(opts.selectorPrefix + '-repeated', key);
-              node.setAttribute(opts.selectorPrefix + '-repeated-index', i);
               node.setAttribute(opts.selectorPrefix + '-repeated-val', enc(val));
               node.innerHTML = val;
               this.appendChild(node);
@@ -221,10 +216,8 @@ var murk = (function(fn) {
         // using divs.
         } else {
           var doc = document.createDocumentFragment();
-          Array.prototype.forEach.call(state.model[key], function(val, i) {
+          Array.prototype.forEach.call(state.model[key], function(val) {
             var node = document.createElement(this.nodeName);
-            node.setAttribute(opts.selectorPrefix + '-repeated', key);
-            node.setAttribute(opts.selectorPrefix + '-repeated-index', i);
             node.setAttribute(opts.selectorPrefix + '-repeated-val', enc(val));
             node.innerHTML = val;
             doc.appendChild(node);
