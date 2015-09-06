@@ -25,7 +25,8 @@ var example = (function(w,d) {
     }).set({
       firstExample: 'this is',
       secondExample: 'data binding',
-      thirdExample: 'murked.'
+      thirdExample: 'murked.',
+      repeatedExample: ['holy','kittens','ye']
     });
 
     modelOutput = d.getElementById('model');
