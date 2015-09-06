@@ -17,7 +17,10 @@
     <div data-murk="secondExample"></div>
     <div data-murk="thirdExample" data-murk-filter="highlightText"></div>
     <div data-murk="fourthExample" data-murk-filter="reverseStr,highlightText">embedded example</div>
-    <div data-murk="repeatedExample" data-murk-repeat="true"></div>
+    <div data-murk="repeatedExample" data-murk-repeat="true">
+      <div data-murk-repeat-key="name"></div>
+      <div data-murk-repeat-key="age"></div>
+    </div>
   </div>
 
   <div class="form-row">
@@ -91,7 +94,16 @@
       firstExample: 'this is',
       secondExample: 'data binding',
       thirdExample: 'murked.',
-      repeatedExample: ['holy','kittens','ye']
+      repeatedExample: [{
+        name: 'baz',
+        age: 21
+      },{
+        name: 'foo',
+        age: 22
+      },{
+        name: 'bar',
+        age: 23
+      }]
     });
 
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
