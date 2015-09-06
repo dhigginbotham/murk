@@ -195,18 +195,25 @@ var murk = (function(fn) {
           // low. 
           Array.prototype.forEach.call(state.model[key], function(val, i) {
             if (i < nodesLn) {
+              var lastVal = dec(this.childNodes[i].getAttribute(opts.selectorPrefix + '-repeated-val'));
               this.childNodes[i].setAttribute(opts.selectorPrefix + '-repeated', key);
               this.childNodes[i].setAttribute(opts.selectorPrefix + '-repeated-index', i);
-              this.childNodes[i].innerHTML = val;
+              if (lastVal != val) {
+                this.childNodes[i].setAttribute(opts.selectorPrefix + '-repeated-val', enc(val));
+                this.childNodes[i].innerHTML = val;
+              }
               this.childNodes[i].style.display = 'inherit';
+            // we can't reuse anymore elems, 
+            // so lets create new ones, yey
             } else {
               var node = document.createElement(this.nodeName);
               node.setAttribute(opts.selectorPrefix + '-repeated', key);
               node.setAttribute(opts.selectorPrefix + '-repeated-index', i);
+              node.setAttribute(opts.selectorPrefix + '-repeated-val', enc(val));
               node.innerHTML = val;
               this.appendChild(node);
             }
-          },this);
+          }, this);
         // we don't have any children to 
         // reuse, so we need to make some.
         // we'll only create the same elements 
@@ -218,6 +225,7 @@ var murk = (function(fn) {
             var node = document.createElement(this.nodeName);
             node.setAttribute(opts.selectorPrefix + '-repeated', key);
             node.setAttribute(opts.selectorPrefix + '-repeated-index', i);
+            node.setAttribute(opts.selectorPrefix + '-repeated-val', enc(val));
             node.innerHTML = val;
             doc.appendChild(node);
           }, this);

@@ -11,19 +11,19 @@ var example = (function(w,d) {
   m = murk({
     dev: true,
     id: 'demo'
-  });
-
-  m.registerFilter('reverseStr', function(val) {
+  }).registerFilter('reverseStr', function(val) {
     return val.split('').reverse().join('');
-  });
-
-  m.registerFilter('highlightText', function(val) {
+  }).registerFilter('highlightText', function(val) {
     this.style.color = 'red';
   });
 
   function init() {
 
-    m.on(['firstExample','secondExample','thirdExample','fourthExample'], function(key, fn) {
+    modelOutput = d.getElementById('model');
+
+    m.on('repeatedExample', function(key) {
+      modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
+    }).on(['firstExample','secondExample','thirdExample','fourthExample'], function(key) {
       var count = this.getAttribute('data-murk-count');
       var el = d.getElementById(key + 'Count');
       var input = d.getElementById(key);
@@ -32,16 +32,13 @@ var example = (function(w,d) {
         m.set(key + 'Count', count);
         el.style.display = 'inherit';
       }
-      if (fn) return fn(null, true);
-    });
-    
-    m.set({
+    }).set({
       firstExample: 'this is',
       secondExample: 'data binding',
-      thirdExample: 'murked.'
+      thirdExample: 'murked.',
+      repeatedExample: ['holy','kittens','ye']
     });
 
-    modelOutput = d.getElementById('model');
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
 
     $('[data-murk-example]').on('keyup blur', function(e) {
