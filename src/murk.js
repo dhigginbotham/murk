@@ -84,14 +84,14 @@ var murk = (function(fn) {
       bindElem(ctx);
     } else {
       dom = (!state.dom.length ? collectDom() : state.dom);
-      Array.prototype.map.call(dom, bindElem);
+      Array.prototype.forEach.call(dom, bindElem);
     }
   }
 
   function recollectElems(ctx) {
     ctx = (typeof ctx == 'undefined' ? document : ctx);
     var dom = collectDom(ctx);
-    Array.prototype.map.call(dom, bindElem);
+    Array.prototype.forEach.call(dom, bindElem);
   }
 
   // collects dom from context provided,
@@ -147,7 +147,7 @@ var murk = (function(fn) {
   // context to the state object as `this`
   function handleSubscribers(key) {
     if (!state.subscribers.hasOwnProperty(key)) {
-      state.subscribers[key] = [elemBindingEvent, processFiltersEvent, trackCountEvent];
+      state.subscribers[key] = [elemBindingEvent, processFiltersEvent, repeaterEvent, trackCountEvent];
     }
     var fns = Array.prototype.slice.call(state.subscribers[key]);
     while (fn = fns.shift()) fn.call(state.elems[key], key);
@@ -157,16 +157,30 @@ var murk = (function(fn) {
   function attachSubscriber(key, fn) {
     function subscribe(k) {
       if (!state.subscribers.hasOwnProperty(k)) {
-        state.subscribers[k] = [elemBindingEvent, processFiltersEvent, trackCountEvent];
+        state.subscribers[k] = [elemBindingEvent, processFiltersEvent, repeaterEvent, trackCountEvent];
       }
       state.subscribers[k].push(fn);
     }
     if (key instanceof Array) {
-      Array.prototype.map.call(key, subscribe);
+      Array.prototype.forEach.call(key, subscribe);
     } else {
       subscribe(key);
     }
     return this;
+  }
+
+  // i dont know if this is how i want
+  // to handle repeats, but for now yes
+  function repeaterEvent(key) {
+    if (state.model[key] instanceof Array) {
+      var doc = document.createDocumentFragment();
+      Array.prototype.forEach.call(state.model[key], function(val) {
+        var node = document.createElement(this.nodeName);
+        node.innerHTML = val;
+        doc.appendChild(node);
+      }, this);
+      this.appendChild(doc);
+    }
   }
 
   // we want to keep track of how many
@@ -206,7 +220,7 @@ var murk = (function(fn) {
       if (filters) {
         if (filters.indexOf(',') != -1) filters = filters.split(',');
         if (!(filters instanceof Array)) filters = [filters];
-        Array.prototype.map.call(filters, processFilter, this);
+        Array.prototype.forEach.call(filters, processFilter, this);
       }
     }
   }
@@ -236,7 +250,9 @@ var murk = (function(fn) {
     // to this elem
     attrs(opts.selectorPrefix + '-bound', true);
     // set innerText of value to elem
-    this.innerHTML = state.model[key];
+    if (!(state.model[key] instanceof Array)) {
+      this.innerHTML = state.model[key];
+    }
   }
   
   // just a wrapper for elem.[set/get]Attribute()
