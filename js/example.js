@@ -12,7 +12,11 @@ var example = (function(w,d) {
 
   function init() {
 
-    m.on(['firstExample','secondExample','thirdExample','fourthExample'], function(key, fn) {
+    modelOutput = d.getElementById('model');
+
+    m.on('repeatedExample', function(key) {
+      modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
+    }).on(['firstExample','secondExample','thirdExample','fourthExample'], function(key) {
       var count = this.getAttribute('data-murk-count');
       var el = d.getElementById(key + 'Count');
       var input = d.getElementById(key);
@@ -21,7 +25,6 @@ var example = (function(w,d) {
         m.set(key + 'Count', count);
         el.style.display = 'inherit';
       }
-      if (fn) return fn(null, true);
     }).set({
       firstExample: 'this is',
       secondExample: 'data binding',
@@ -29,7 +32,6 @@ var example = (function(w,d) {
       repeatedExample: ['holy','kittens','ye']
     });
 
-    modelOutput = d.getElementById('model');
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
 
     $('[data-murk-example]').on('keyup blur', function(e) {
