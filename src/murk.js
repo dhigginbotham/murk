@@ -238,7 +238,7 @@ var murk = (function(fn) {
   // we want to keep track of how many
   // times we're interacting with our 
   // elems
-  function trackCountEvent(key) {
+  function trackCountEvent() {
     var count;
     var attrs = attr(this);
     if (opts.trackCount) {
