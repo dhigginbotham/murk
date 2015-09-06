@@ -29,16 +29,7 @@ var example = (function(w,d) {
       firstExample: 'this is',
       secondExample: 'data binding',
       thirdExample: 'murked.',
-      repeatedExample: [{
-        name: 'baz',
-        age: 21
-      },{
-        name: 'foo',
-        age: 22
-      },{
-        name: 'bar',
-        age: 23
-      }]
+      repeatedExample: ['holy','kitteh']
     });
 
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
