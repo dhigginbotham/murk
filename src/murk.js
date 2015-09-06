@@ -173,13 +173,57 @@ var murk = (function(fn) {
   // to handle repeats, but for now yes
   function repeaterEvent(key) {
     if (state.model[key] instanceof Array) {
-      var doc = document.createDocumentFragment();
-      Array.prototype.forEach.call(state.model[key], function(val) {
-        var node = document.createElement(this.nodeName);
-        node.innerHTML = val;
-        doc.appendChild(node);
-      }, this);
-      this.appendChild(doc);
+      var attrs = attr(this);
+      if (attrs(opts.selectorPrefix + '-repeat')) {
+        // we want to always reuse children 
+        // if we can...
+        if (this.hasChildNodes()) {
+          var nodesLn = this.childNodes.length;
+          var modelLn = state.model[key].length;
+          // if we have more elems than we have 
+          // model vars, this takes the end of our
+          // nodes and only hides those.
+          if (nodesLn > modelLn) {
+            for (var i=modelLn;i<nodesLn;++i) {
+              this.childNodes[i].removeAttribute(opts.selectorPrefix + '-repeated-index');
+              this.childNodes[i].style.display = 'none';
+            }
+          }
+          // this is how we're going to only 
+          // reuse or create new nodes, this
+          // should help keep the footprint
+          // low. 
+          Array.prototype.forEach.call(state.model[key], function(val, i) {
+            if (i < nodesLn) {
+              this.childNodes[i].setAttribute(opts.selectorPrefix + '-repeated', key);
+              this.childNodes[i].setAttribute(opts.selectorPrefix + '-repeated-index', i);
+              this.childNodes[i].innerHTML = val;
+              this.childNodes[i].style.display = 'inherit';
+            } else {
+              var node = document.createElement(this.nodeName);
+              node.setAttribute(opts.selectorPrefix + '-repeated', key);
+              node.setAttribute(opts.selectorPrefix + '-repeated-index', i);
+              node.innerHTML = val;
+              this.appendChild(node);
+            }
+          },this);
+        // we don't have any children to 
+        // reuse, so we need to make some.
+        // we'll only create the same elements 
+        // you bound them to, i suggest 
+        // using divs.
+        } else {
+          var doc = document.createDocumentFragment();
+          Array.prototype.forEach.call(state.model[key], function(val, i) {
+            var node = document.createElement(this.nodeName);
+            node.setAttribute(opts.selectorPrefix + '-repeated', key);
+            node.setAttribute(opts.selectorPrefix + '-repeated-index', i);
+            node.innerHTML = val;
+            doc.appendChild(node);
+          }, this);
+          this.appendChild(doc);
+        }
+      }
     }
   }
 
