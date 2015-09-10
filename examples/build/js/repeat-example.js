@@ -14,11 +14,12 @@ var repeatExample = (function(w,d) {
 
     modelOutput = d.getElementById('repeatModel');
 
-    m.on('repeatedExample', function() {
-      modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
-    }).on('formErrors', function(key) {
-      this.style.display = (m.get(key) ? 'inherit' : 'none');
+    m.on('formErrors', function(key) {
+      this.style.display = (!m.state.model[key] ? 'none' : 'block');
+    }).on('repeatedExample', function() {
+      modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys, count: m.state.totalCount},null,2);
     }).set({
+      formErrors: false,
       repeatedExample: [{
         name: 'polly',
         age: 29
@@ -31,8 +32,7 @@ var repeatExample = (function(w,d) {
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
 
     $('[data-murk-example="repeat"]').on('keyup blur', function() {
-      m.set(this.id, this.value); 
-      modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
+      modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys, count: m.state.totalCount},null,2);
     });
 
     $('[data-murk-example-button]').on('click', function() {
@@ -49,18 +49,20 @@ var repeatExample = (function(w,d) {
           var itemData = item.dataset;
           if (item.value) {
             person[itemData.murkExampleKey] = item.value;
+          } else {
+            m.set('formErrors', 'You must fill out ' + itemData.murkExampleKey);
           }
         }
         if (person.name && person.age) {
           ref.push(person);
-          m.set('formErrors', null);
+          m.set('formErrors', false);
         } else {
-          m.set('formErrors', 'You must fill out both name and age');
+          m.set('formErrors', 'You must fill out the form');
         }
       } else if (data.murkExampleButton == 'remove') {
         ref = ref.splice(1, ref.length-1);
       }
-      return m.set(data.murkExampleItem, ref);
+      m.set(data.murkExampleItem, ref);
     });
     return m;
   }

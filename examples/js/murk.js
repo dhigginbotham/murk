@@ -16,14 +16,15 @@ var murk = (function(fn) {
     subscribers: {},
     filters: {},
     keys: [],
-    start: Date.now()
+    start: Date.now(),
+    totalCount: 0
   };
 
   var opts = {
     selectorPrefix: 'data-murk',
     dev: false,
     id: state.start,
-    defaultSubscribers: [elemBindingEvent, processFiltersEvent, trackCountEvent, handleRepeat]
+    defaultSubscribers: [handleRepeat, elemBindingEvent, processFiltersEvent, trackCountEvent]
   };
 
   if (options) extend(opts, options);
@@ -131,12 +132,14 @@ var murk = (function(fn) {
         if (state.model.hasOwnProperty(key)) {
           // we only want to modify elems that 
           // have changed their values
-          if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key] ||
+          if (!state.model[key] ||
+            dec(attrs(opts.selectorPrefix + '-val')) != state.model[key] ||
             typeof state.model[key] == 'object') {
             // keep track of our elems to use
             // later as reference
             // handle any subscribers on this elem
             handleSubscribers(key);
+            ++state.totalCount;
           }
         } else {
           attrs(opts.selectorPrefix + '-bound', false);
@@ -228,7 +231,6 @@ var murk = (function(fn) {
         if (state.repeats.hasOwnProperty(key) && isNew) this.parentNode.appendChild(frag);
       }
     }
-    return true;
   }
 
   // we want to keep track of how many
