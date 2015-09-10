@@ -1,0 +1,44 @@
+<div class="example-container basic-example">
+  <div class="hero">
+    <div data-murk-id="basic" data-murk="firstExample" data-murk-filter="reverseStr"></div>
+    <div data-murk-id="basic" data-murk="secondExample"></div>
+    <div data-murk-id="basic" data-murk="thirdExample" data-murk-filter="highlightText"></div>
+    <div data-murk-id="basic" data-murk="fourthExample" data-murk-filter="reverseStr,highlightText">embedded example</div>
+  </div>
+
+  <div class="form-row">
+    <label for="firstExample">First Example:</label>
+    <div id="firstExampleCount">
+      Binding count:
+      <span data-murk-id="basic" data-murk="firstExampleCount"></span>
+    </div>
+    <input type="text" id="firstExample" data-murk-example="basic"/>
+  </div>
+
+  <div class="form-row">
+    <label for="secondExample">Second Example:</label>
+    <div id="secondExampleCount">
+      Binding count:
+      <span data-murk-id="basic" data-murk="secondExampleCount"></span>
+    </div>
+    <input type="text" id="secondExample" data-murk-example="basic"/>    
+  </div>
+
+  <div class="form-row">
+    <label for="thirdExample">Third Example:</label>
+    <div id="thirdExampleCount">
+      Binding count:
+      <span data-murk-id="basic" data-murk="thirdExampleCount"></span>
+    </div>
+    <input type="text" id="thirdExample" data-murk-example="basic"/>
+  </div>
+
+  <div class="form-row">
+    <label for="fourthExample">Fourth Example:</label>
+    <div id="fourthExampleCount" style="display: none;">
+      Binding count:
+      <span data-murk-id="basic" data-murk="fourthExampleCount"></span>
+    </div>
+    <input type="text" id="fourthExample" data-murk-example="basic"/>    
+  </div>  
+</div>

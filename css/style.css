@@ -28,6 +28,11 @@ h1 {
 h1 .small {
   font-size: 50%;
 }
+hr {
+  border: none;
+  border-bottom: 1px solid #dadada;
+  margin: 40px 0 20px;
+}
 label {
   font-weight: bold;
 }
@@ -59,6 +64,9 @@ pre {
 }
 .form-row div span {
   color: #b4da55;
+}
+.form-row.form-controls {
+  padding-bottom: 20px;
 }
 .hero {
   background: #b4da55;
