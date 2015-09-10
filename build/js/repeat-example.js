@@ -16,6 +16,8 @@ var repeatExample = (function(w,d) {
 
     m.on('repeatedExample', function() {
       modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
+    }).on('formErrors', function(key) {
+      this.style.display = (m.get(key) ? 'inherit' : 'none');
     }).set({
       repeatedExample: [{
         name: 'polly',
@@ -36,7 +38,7 @@ var repeatExample = (function(w,d) {
 
     $('[data-murk-example-button]').on('click', function() {
       var data = this.dataset;
-      var ref = Array.prototype.slice.call(m.get(data.murkExampleItem));
+      var ref = m.get(data.murkExampleItem);
       if (data.murkExampleButton == 'add') {
         var person = {
           name: null,
@@ -46,9 +48,16 @@ var repeatExample = (function(w,d) {
         for (var i=0;i<$items.length;++i) {
           var item = $items[i];
           var itemData = item.dataset;
-          person[itemData.murkExampleKey] = item.value;
+          if (item.value) {
+            person[itemData.murkExampleKey] = item.value;
+          }
         }
-        ref.push(person);
+        if (person.name && person.age) {
+          ref.push(person);
+          m.set('formErrors', null);
+        } else {
+          m.set('formErrors', 'You must fill out both name and age');
+        }
       } else if (data.murkExampleButton == 'remove') {
         ref = ref.splice(1, ref.length-1);
       }
