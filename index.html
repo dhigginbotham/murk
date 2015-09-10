@@ -204,12 +204,15 @@
         }
         if (person.name && person.age) {
           ref.push(person);
-          m.set('formErrors', false);
+          m.set(data.murkExampleItem, ref);
+          if (m.get('formErrors')) m.set('formErrors', false);
+        } else {
+          m.set('formErrors', 'You must fill out both name and age');
         }
       } else if (data.murkExampleButton == 'remove') {
         ref = ref.splice(1, ref.length-1);
+        m.set(data.murkExampleItem, ref);
       }
-      m.set(data.murkExampleItem, ref);
     });
     return m;
   }
