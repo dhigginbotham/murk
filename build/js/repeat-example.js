@@ -25,8 +25,7 @@ var repeatExample = (function(w,d) {
       },{
         name: 'jolly',
         age: 52
-      }],
-      secondRepeatedExample: ['happy', 'cat']
+      }]
     });
 
     modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
