@@ -205,8 +205,6 @@
         if (person.name && person.age) {
           ref.push(person);
           m.set('formErrors', false);
-        } else {
-          m.set('formErrors', 'You must fill out the form');
         }
       } else if (data.murkExampleButton == 'remove') {
         ref = ref.splice(1, ref.length-1);
