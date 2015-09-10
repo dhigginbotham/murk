@@ -1,0 +1,24 @@
+<div class="example-container repeat-example">
+  <div class="hero">
+    <div data-murk="repeatedExample" data-murk-repeat="true" data-murk-id="repeat">
+      <div data-murk-repeat="name"></div>
+      <div data-murk-repeat="age"></div>
+    </div>
+    <div data-murk="secondRepeatedExample" data-murk-repeat="true" data-murk-id="repeat"></div>
+  </div>
+
+  <div class="form-row">
+    <label for="repeatedExampleName">Name:</label>
+    <input type="text" id="repeatedExampleName" data-murk-example-key="name" data-murk-example="repeat"/>
+  </div>
+  <div class="form-row">
+    <label for="repeatedExampleAge">Age:</label>
+    <input type="text" id="repeatedExampleAge" data-murk-example-key="age" data-murk-example="repeat"/>
+  </div>
+
+  <div class="form-row form-controls">
+    <button data-murk-example-button="add" data-murk-example-item="repeatedExample">Add</button>
+    <button data-murk-example-button="remove" data-murk-example-item="repeatedExample">Remove</button>
+  </div>
+
+</div>

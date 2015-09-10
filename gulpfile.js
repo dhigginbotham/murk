@@ -3,9 +3,17 @@ var gulp = require('gulp'),
     ggzip = require('gulp-gzip'),
     gpages = require('gulp-gh-pages'),
     gutil = require('gulp-util'),
+    gconcat = require('gulp-concat'),
     gtemplate = require('gulp-template'),
     grename = require('gulp-rename'),
     fs = require('fs');
+
+var templateFiles = { 
+  basicJs: fs.readFileSync('./examples/build/js/basic-example.js'),
+  repeatJs: fs.readFileSync('./examples/build/js/repeat-example.js'),
+  basicTmpl: fs.readFileSync('./examples/build/templates/basic-example.tmpl'),
+  repeatTmpl: fs.readFileSync('./examples/build/templates/repeat-example.tmpl')
+};
 
 gulp.task('min', function() {
   return gulp.src('./src/murk.js')
@@ -22,10 +30,22 @@ gulp.task('zip', function() {
     .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('template', function() {
-  var example = fs.readFileSync('./examples/js/example.js');
-  return gulp.src('./examples/template.tmpl')
-    .pipe(gtemplate({ js: example }))
+gulp.task('examples', function() {
+  return gulp.src([
+      './examples/build/js/example.js',
+      './examples/build/js/basic-example.js',
+      './examples/build/js/repeat-example.js'
+    ])
+    .on('error', gutil.log)
+    .pipe(gconcat('examples.min.js'))
+    .pipe(guglify())
+    .pipe(gulp.dest('./examples/js'));
+});
+
+gulp.task('template', ['examples'], function() {
+  return gulp.src('./examples/build/templates/layout.tmpl')
+    .on('error', gutil.log)
+    .pipe(gtemplate(templateFiles))
     .pipe(grename('./index.html'))
     .pipe(gulp.dest('./examples'));
 });
