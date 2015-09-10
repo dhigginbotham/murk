@@ -57,7 +57,7 @@ var repeatExample = (function(w,d) {
           ref.push(person);
           m.set('formErrors', false);
         } else {
-          m.set('formErrors', 'You must fill out the form');
+          m.set('formErrors', 'You must fill out both name and age');
         }
       } else if (data.murkExampleButton == 'remove') {
         ref = ref.splice(1, ref.length-1);
