@@ -17,9 +17,7 @@ var repeatExample = (function(w,d) {
     m.on('repeatedExample', function() {
       modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
     }).on('formErrors', function(key) {
-      var $el = $(this);
-      var tog = (m.state.model[key] ? 'removeClass' : 'addClass');
-      $el[tog]('hidden');
+      this.style.display = (m.get(key) ? 'inherit' : 'none');
     }).set({
       repeatedExample: [{
         name: 'polly',
@@ -40,7 +38,7 @@ var repeatExample = (function(w,d) {
 
     $('[data-murk-example-button]').on('click', function() {
       var data = this.dataset;
-      var ref = Array.prototype.slice.call(m.get(data.murkExampleItem));
+      var ref = m.get(data.murkExampleItem);
       if (data.murkExampleButton == 'add') {
         var person = {
           name: null,
