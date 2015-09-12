@@ -186,10 +186,10 @@ var murk = (function(fn) {
               node.innerHTML = this[repeatKey];
             }
           }
-          bindElem(node);
         } else {
           node.innerHTML = '';
         }
+        bindElem(node);
       } 
     }
   }
