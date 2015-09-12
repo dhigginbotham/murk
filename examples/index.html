@@ -135,12 +135,12 @@
   </div>
   
   <div class="hero">
-    <div data-murk="repeatedExample" data-murk-repeat="true" data-murk-id="repeat">
+    <div data-murk="repeatedExample" data-murk-id="repeat">
       <div>
-        Name: <span data-murk-repeat="name"></span>
+        Name: <span data-murk-repeat-key="name" data-murk-filter="highlightText"></span>
       </div>
       <div>
-        Age: <span data-murk-repeat="age"></span>
+        Age: <span data-murk-repeat-key="age"></span>
       </div>
     </div>
   </div>
@@ -166,6 +166,15 @@
 
   function init() {
 
+    var demoArr = [];
+
+    for (var i=0;i<1000;++i) {
+      demoArr.push({
+        name: 'polly',
+        age: 5+i
+      });
+    }
+
     modelOutput = d.getElementById('repeatModel');
 
     m.on('formErrors', function(key) {
@@ -174,15 +183,12 @@
     }).on('repeatedExample', function() {
       example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
     }).set({
-      formErrors: false,
-      repeatedExample: [{
-        name: 'polly',
-        age: 29
-      },{
-        name: 'jolly',
-        age: 52
-      }]
+      formErrors: false
+      , repeatedExample: demoArr
     });
+
+
+    m.set('repeatedExample', demoArr);
 
     example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
 

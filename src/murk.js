@@ -91,6 +91,7 @@ var murk = (function(fn) {
     }
   }
 
+  // pub function
   function recollectElems(ctx) {
     ctx = (typeof ctx == 'undefined' ? document : ctx);
     var dom = collectDom(ctx);
@@ -140,6 +141,11 @@ var murk = (function(fn) {
             // later as reference
             // handle any subscribers on this elem
             handleSubscribers(key);
+            // keep visual refence we're bound
+            // to this elem
+            if (!attrs(opts.selectorPrefix + '-bound')) {
+              attrs(opts.selectorPrefix + '-bound', true);
+            }
           }
         } else {
           attrs(opts.selectorPrefix + '-bound', false);
@@ -172,26 +178,13 @@ var murk = (function(fn) {
     return this;
   }
 
-  function processNodes(node) {
-    var nodeAttrs = attr(node);
-    if (nodeAttrs) {
-      var repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat');
-      if (repeatKey) {
-        if (this.hasOwnProperty(repeatKey)) {
-          node.innerHTML = this[repeatKey];
-        }
-      }
-    }
-  }
-
   // this is better ;D
   function handleRepeat(key) {
-    var repeatModel, attrs, isRepeated, repeatElKeys, frag, processRepeats, newEl = false;
+    var repeatModel, attrs, repeatElKeys, frag, processRepeats, newEl = false;
     if (state.model[key] instanceof Array) {
       repeatModel = state.model[key];
       attrs = attr(this);
-      isRepeated = attrs(opts.selectorPrefix + '-repeat');
-      if (isRepeated) {
+      // if (attrs(opts.selectorPrefix + '-repeat')) {
         if (!state.repeats.hasOwnProperty(key)) {
           state.repeats[key] = {};
           if (!state.repeats.hasOwnProperty('elems')) {
@@ -206,7 +199,19 @@ var murk = (function(fn) {
           }
         }
         processRepeats = function(current, i) {
-          var curEl, curAtts, newKey = (key + '.$' + i);
+          var curEl, curAtts, processNodes, newKey = (key + '.$' + i);
+          // processes nodes for repeats <3
+          processNodes = function(node) {
+            var repeatKey, nodeAttrs = attr(node);
+            if (nodeAttrs) {
+              repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat-key');
+              if (repeatKey && this.hasOwnProperty(repeatKey)) {
+                if (node.innerHTML != this[repeatKey]) {
+                  node.innerHTML = this[repeatKey];
+                }
+              }
+            }
+          };
           if (!state.repeats[key].elems.hasOwnProperty(newKey)) {
             state.repeats[key].elems[newKey] = this.cloneNode(true);
             this.style.display = 'none';
@@ -215,38 +220,24 @@ var murk = (function(fn) {
           curEl = state.repeats[key].elems[newKey];
           if (curEl.innerHTML != repeatModel) {
             curAtts = attr(curEl);
-            if (curAtts) {
-              if (curAtts(opts.selectorPrefix)) {
-                curAtts(opts.selectorPrefix, 'rm');
-                curAtts(opts.selectorPrefix + '-repeat', 'rm');
-                curAtts(opts.selectorPrefix + '-count', 'rm');
-                curAtts(opts.selectorPrefix + '-parent', key);
-                curAtts(opts.selectorPrefix + '-index', i);
-              }
-              if (typeof current == 'object') {
-                Array.prototype.forEach.call(curEl.getElementsByTagName('*'), processNodes, current);
-              } else {
-                curEl.innerHTML = current;
-              }
-              curEl.style.display = 'block';
-              if (newEl) frag.appendChild(curEl);
+            if (newEl) {
+              curAtts(opts.selectorPrefix, 'rm');
+              curAtts(opts.selectorPrefix + '-count', 'rm');
+              curAtts(opts.selectorPrefix + '-index', i);
             }
+            if (typeof current == 'object') {
+              Array.prototype.forEach.call(curEl.getElementsByTagName('*'), processNodes, current);
+            } else {
+              curEl.innerHTML = current;
+            }
+            curEl.style.display = 'block';
+            if (newEl) frag.appendChild(curEl);
           }
         };
         Array.prototype.forEach.call(repeatModel, processRepeats, this);
         if (state.repeats.hasOwnProperty(key) && newEl) this.parentNode.appendChild(frag);
-      }
+      // }
     }
-  }
-
-  // we want to keep track of how many
-  // times we're interacting with our 
-  // elems
-  function trackCountEvent() {
-    var count;
-    var attrs = attr(this);
-    count = attrs(opts.selectorPrefix + '-count');
-    attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
   }
 
   // proccesses the filters added to any
@@ -297,20 +288,29 @@ var murk = (function(fn) {
   // this...
   function elemBindingEvent(key) {
     var attrs = attr(this);
-    // keep visual refence we're bound
-    // to this elem
-    attrs(opts.selectorPrefix + '-bound', true);
     // set innerText of value to elem
     if (!(state.model[key] instanceof Array) && 
       typeof state.model[key] != 'object') {
       // encode and set a reference of our 
       // newly bound value
       attrs(opts.selectorPrefix + '-val', enc(state.model[key]));
-      this.innerHTML = state.model[key];
-      if (opts.dev) console.log(key, state.totalCount);
+      if (state.model[key] != this.innerHTML) {
+        this.innerHTML = state.model[key];
+        if (opts.dev) console.log(key, state.totalCount);
+      }
     }
   }
   
+  // we want to keep track of how many
+  // times we're interacting with our 
+  // elems
+  function trackCountEvent() {
+    var count;
+    var attrs = attr(this);
+    count = attrs(opts.selectorPrefix + '-count');
+    attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
+  }
+
   // just a wrapper for elem.[set/get]Attribute()
   function attr(elem) {
     if (typeof elem != 'undefined') {

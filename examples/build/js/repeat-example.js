@@ -12,6 +12,15 @@ var repeatExample = (function(w,d) {
 
   function init() {
 
+    var demoArr = [];
+
+    for (var i=0;i<1000;++i) {
+      demoArr.push({
+        name: 'polly',
+        age: 5+i
+      });
+    }
+
     modelOutput = d.getElementById('repeatModel');
 
     m.on('formErrors', function(key) {
@@ -20,15 +29,12 @@ var repeatExample = (function(w,d) {
     }).on('repeatedExample', function() {
       example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
     }).set({
-      formErrors: false,
-      repeatedExample: [{
-        name: 'polly',
-        age: 29
-      },{
-        name: 'jolly',
-        age: 52
-      }]
+      formErrors: false
+      , repeatedExample: demoArr
     });
+
+
+    m.set('repeatedExample', demoArr);
 
     example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
 
