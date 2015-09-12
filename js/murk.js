@@ -53,8 +53,9 @@ var murk = (function(fn) {
       // pass that reference if possible to
       // improve performance
       if (state.elems.hasOwnProperty(obj)) {
-        return collectElems(state.elems[obj]);
+        collectElems(state.elems[obj]);
       }
+      return this;
     } else {
       if (merge) {
         extend(state.model, obj);
@@ -90,6 +91,7 @@ var murk = (function(fn) {
     }
   }
 
+  // pub function
   function recollectElems(ctx) {
     ctx = (typeof ctx == 'undefined' ? document : ctx);
     var dom = collectDom(ctx);
@@ -132,18 +134,23 @@ var murk = (function(fn) {
         if (state.model.hasOwnProperty(key)) {
           // we only want to modify elems that 
           // have changed their values
-          if (!state.model[key] ||
-            dec(attrs(opts.selectorPrefix + '-val')) != state.model[key] ||
-            typeof state.model[key] == 'object') {
+          // if (!state.model[key] ||
+          if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key] ||
+              typeof state.model[key] == 'object') {
             // keep track of our elems to use
             // later as reference
             // handle any subscribers on this elem
             handleSubscribers(key);
-            ++state.totalCount;
+            // keep visual refence we're bound
+            // to this elem
+            if (!attrs(opts.selectorPrefix + '-bound')) {
+              attrs(opts.selectorPrefix + '-bound', true);
+            }
           }
         } else {
           attrs(opts.selectorPrefix + '-bound', false);
         }
+        ++state.totalCount;
       }
     }
   }
@@ -171,27 +178,13 @@ var murk = (function(fn) {
     return this;
   }
 
-  function templateRepeat(node) {
-    var nodeAttrs = attr(node);
-    if (nodeAttrs) {
-      var repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat');
-      if (repeatKey) {
-        node.parentNode.style.display = 'inherit';
-        if (this.hasOwnProperty(repeatKey)) {
-          node.innerHTML = this[repeatKey];
-        }
-      }
-    }
-  }
-
   // this is better ;D
   function handleRepeat(key) {
+    var repeatModel, attrs, repeatElKeys, frag, processRepeats, newEl = false;
     if (state.model[key] instanceof Array) {
-      var repeatModel, attrs, isRepeated, repeatKeys, frag, processRepeats, isNew = false;
       repeatModel = state.model[key];
       attrs = attr(this);
-      isRepeated = attrs(opts.selectorPrefix + '-repeat');
-      if (isRepeated) {
+      // if (attrs(opts.selectorPrefix + '-repeat')) {
         if (!state.repeats.hasOwnProperty(key)) {
           state.repeats[key] = {};
           if (!state.repeats.hasOwnProperty('elems')) {
@@ -199,48 +192,51 @@ var murk = (function(fn) {
           }
         }
         frag = document.createDocumentFragment();
-        repeatKeys = Object.keys(state.repeats[key].elems);
-        if (repeatKeys.length > repeatModel.length) {
-          for(var o=repeatModel.length;o<repeatKeys.length;++o) {
-            state.repeats[key].elems[repeatKeys[o]].style.display = 'none';
+        repeatElKeys = Object.keys(state.repeats[key].elems);
+        if (repeatElKeys.length > repeatModel.length) {
+          for(var o=repeatModel.length;o<repeatElKeys.length;++o) {
+            state.repeats[key].elems[repeatElKeys[o]].style.display = 'none';
           }
         }
         processRepeats = function(current, i) {
-          var domRef, domAttrs, nodes, newKey = (key + '.$' + i);
+          var curEl, curAtts, processNodes, newKey = (key + '.$' + i);
+          // processes nodes for repeats <3
+          processNodes = function(node) {
+            var repeatKey, nodeAttrs = attr(node);
+            if (nodeAttrs) {
+              repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat-key');
+              if (repeatKey && this.hasOwnProperty(repeatKey)) {
+                if (node.innerHTML != this[repeatKey]) {
+                  node.innerHTML = this[repeatKey];
+                }
+              }
+            }
+          };
           if (!state.repeats[key].elems.hasOwnProperty(newKey)) {
             state.repeats[key].elems[newKey] = this.cloneNode(true);
-            isNew = true;
+            this.style.display = 'none';
+            newEl = true;
           }
-          domRef = state.repeats[key].elems[newKey];
-          domAttrs = attr(domRef);
-          if (domAttrs) {
-            domAttrs(opts.selectorPrefix, 'rm');
-            domAttrs(opts.selectorPrefix + '-repeat', 'rm');
-            domAttrs(opts.selectorPrefix + '-parent', key);
-            domAttrs(opts.selectorPrefix + '-index', i);
-            if (typeof current == 'object') {
-              nodes = domRef.getElementsByTagName('*');
-              Array.prototype.forEach.call(nodes, templateRepeat, current);
-            } else {
-              domRef.innerHTML = current;
+          curEl = state.repeats[key].elems[newKey];
+          if (curEl.innerHTML != repeatModel) {
+            curAtts = attr(curEl);
+            if (newEl) {
+              curAtts(opts.selectorPrefix + '-count', 'rm');
+              curAtts(opts.selectorPrefix + '-index', i);
             }
-            if (isNew) frag.appendChild(domRef);
+            if (typeof current == 'object') {
+              Array.prototype.forEach.call(curEl.getElementsByTagName('*'), processNodes, current);
+            } else {
+              curEl.innerHTML = current;
+            }
+            curEl.style.display = 'block';
+            if (newEl) frag.appendChild(curEl);
           }
         };
         Array.prototype.forEach.call(repeatModel, processRepeats, this);
-        if (state.repeats.hasOwnProperty(key) && isNew) this.parentNode.appendChild(frag);
-      }
+        if (state.repeats.hasOwnProperty(key) && newEl) this.parentNode.appendChild(frag);
+      // }
     }
-  }
-
-  // we want to keep track of how many
-  // times we're interacting with our 
-  // elems
-  function trackCountEvent() {
-    var count;
-    var attrs = attr(this);
-    count = attrs(opts.selectorPrefix + '-count');
-    attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
   }
 
   // proccesses the filters added to any
@@ -291,19 +287,29 @@ var murk = (function(fn) {
   // this...
   function elemBindingEvent(key) {
     var attrs = attr(this);
-    // keep visual refence we're bound
-    // to this elem
-    attrs(opts.selectorPrefix + '-bound', true);
     // set innerText of value to elem
     if (!(state.model[key] instanceof Array) && 
       typeof state.model[key] != 'object') {
       // encode and set a reference of our 
       // newly bound value
       attrs(opts.selectorPrefix + '-val', enc(state.model[key]));
-      this.innerHTML = state.model[key];
+      if (state.model[key] != this.innerHTML) {
+        this.innerHTML = state.model[key];
+        if (opts.dev) console.log(key, state.totalCount);
+      }
     }
   }
   
+  // we want to keep track of how many
+  // times we're interacting with our 
+  // elems
+  function trackCountEvent() {
+    var count;
+    var attrs = attr(this);
+    count = attrs(opts.selectorPrefix + '-count');
+    attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
+  }
+
   // just a wrapper for elem.[set/get]Attribute()
   function attr(elem) {
     if (typeof elem != 'undefined') {

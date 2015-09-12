@@ -4,6 +4,20 @@
 * {
   box-sizing: border-box;
 }
+.cf:after {
+     visibility: hidden;
+     display: block;
+     font-size: 0;
+     content: " ";
+     clear: both;
+     height: 0;
+     }
+.cf { display: inline-block; }
+/* start commented backslash hack \*/
+* html .cf { height: 1%; }
+.cf { display: block; }
+/* close commented backslash hack */
+
 body {
   font-family: Arial;
   font-size: 14px;

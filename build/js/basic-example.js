@@ -29,11 +29,11 @@ var basicExample = (function(w,d) {
       thirdExample: 'murked.'
     });
 
-    modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
+    example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
 
     $('[data-murk-example="basic"]').on('keyup blur', function() {
       m.set(this.id, this.value); 
-      modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
+      example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
     });
 
     return m;
