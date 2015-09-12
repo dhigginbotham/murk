@@ -33,9 +33,7 @@ var repeatExample = (function(w,d) {
       var data = this.dataset;
       var ref = m.get('repeatedExample');
       for (var i=0;i<parseInt(data.murkExampleAmounts,0);++i) {
-        window.setTimeout(function() {
-          ref.push({ name: 'murk', age: (5+i)});
-        },0);
+        ref.push({ name: 'murk', age: (5+i)});
       }
       m.set('repeatedExample', ref);
       return false;
