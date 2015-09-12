@@ -16,9 +16,9 @@ var repeatExample = (function(w,d) {
 
     m.on('formErrors', function(key) {
       this.style.display = (!m.state.model[key] ? 'none' : 'block');
-      example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
+      example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
     }).on('repeatedExample', function() {
-      example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
+      example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
     }).set({
       formErrors: false,
       repeatedExample: [{
@@ -27,7 +27,7 @@ var repeatExample = (function(w,d) {
       }]
     });
 
-    example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
+    example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
 
     $('[data-murk-example-amounts]').on('click', function() {
       var data = this.dataset;
@@ -78,7 +78,7 @@ var repeatExample = (function(w,d) {
         }
 
       } else if (data.murkExampleButton == 'remove') {
-        ref = ref.splice(1, ref.length-1);
+        ref.splice(ref.length-1,1);
         m.set(data.murkExampleItem, ref);
       }
     });

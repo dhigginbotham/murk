@@ -130,22 +130,16 @@ var murk = (function(fn) {
           // we only want to modify elems that 
           // have changed their values
           // if (!state.model[key] ||
-          if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key] ||
-              typeof state.model[key] == 'object') {
+          if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key]) {
             // keep track of our elems to use
             // later as reference
             // handle any subscribers on this elem
             handleSubscribers(key);
-            // keep visual refence we're bound
-            // to this elem
-            if (!attrs(opts.selectorPrefix + '-bound')) {
-              attrs(opts.selectorPrefix + '-bound', true);
-            }
+            ++state.totalCount;
           }
         } else {
           attrs(opts.selectorPrefix + '-bound', false);
         }
-        ++state.totalCount;
       }
     }
   }
@@ -178,29 +172,54 @@ var murk = (function(fn) {
     var repeatKey, atts = attr(node);
     if (atts) {
       repeatKey = atts(opts.selectorPrefix + '-repeat-key');
-      if (repeatKey && this.hasOwnProperty(repeatKey)) {
-        if (!atts(opts.selectorPrefix)) {
-          atts(opts.selectorPrefix, this.$key + '.' + repeatKey);
-        }
-        if (node.innerHTML != this[repeatKey]) {
-          node.innerHTML = this[repeatKey];
+      if (repeatKey) {
+        if (this.hasOwnProperty(repeatKey)) {
+          var $$key = this.$key + '.' + repeatKey;
+          if (!atts(opts.selectorPrefix)) {
+            atts(opts.selectorPrefix, $$key);
+          }
+          if (this[repeatKey] === null ||
+              this[repeatKey] === 'null') {
+            node.innerHTML = '';
+          } else {
+            if (node.innerHTML != this[repeatKey]) {
+              node.innerHTML = this[repeatKey];
+            }
+          }
           bindElem(node);
+        } else {
+          node.innerHTML = '';
         }
-      }
+      } 
     }
   }
 
-  // this is better ;D
+  // handle repeats is another default event on the binding chain,
+  // so like all other events in murk, it has context to `this` (as elem)
+  // as well as the current key being processed. it tries to be extremely
+  // light by only doing reads, and saving writes until the end.
   function handleRepeat(key) {
     var repeatModel, attrs, repeatElKeys, frag, processRepeats, newEl = false;
     if (state.model[key] instanceof Array) {
+      // hide our first elem, so we can use it later
       if (this.style.display != 'none') this.style.display = 'none';
       repeatModel = state.model[key];
       attrs = attr(this);
+      
+      // we keep reference of all of our repeats
+      // inside of state.repeats, so we always
+      // need to make sure this exists.
       if (!state.repeats.hasOwnProperty(key)) {
         state.repeats[key] = {};
       }
+      // we going to make most of our dom interaction
+      // through this guy -- love him.
       frag = document.createDocumentFragment();
+
+      // we want to take advantage of reusing elements
+      // so if our model gets smaller than our current
+      // elemnt reference, we can just hide them for 
+      // later use
       repeatElKeys = Object.keys(state.repeats[key]);
       if (repeatElKeys.length > repeatModel.length) {
         for(var o=repeatModel.length;o<repeatElKeys.length;++o) {
@@ -209,30 +228,54 @@ var murk = (function(fn) {
           }
         }
       }
+
+      // processes each repeat individually
       processRepeats = function(repeat, i) {
         var el, atts, $key = (key + '.$' + i);
+        
+        // we make a new key, out of our current key
+        // and setup any new elems that we might need
         if (!state.repeats[key].hasOwnProperty($key)) {
           state.repeats[key][$key] = this.cloneNode(true);
           newEl = true;
+        } else {
+          newEl = false;
         }
+
+        // keep ref of our current elem
         el = state.repeats[key][$key];
+
+        // we only want to bind things that
+        // are fresh, and non object things
+        // can be check simply like this
         if (el.innerHTML != repeatModel) {
           atts = attr(el);
+
+          // new els get sanitized
           if (newEl) {
+            atts(opts.selectorPrefix, 'rm');
             atts(opts.selectorPrefix + '-count', 'rm');
-            atts(opts.selectorPrefix + '-index', i);
+            atts(opts.selectorPrefix + '-bound', 'rm');
+            atts(opts.selectorPrefix + '-repeat', $key);
           }
           if (typeof repeat == 'object') {
+            // allows us to keep ref of new $key,
+            // so our processNodes fn can setup
+            // binding on the child nodes.
             repeat.$key = $key;
             Array.prototype.forEach.call(el.getElementsByTagName('*'), processNodes, repeat);
           } else {
             el.innerHTML = repeat;
           }
-          el.style.display = '';
+          // let their be light XD
+          if (el.style.display == 'none') el.style.display = '';
+          // only append new elems to our frag, 
+          // everything else exists.
           if (newEl) frag.appendChild(el);
         }
       };
       Array.prototype.forEach.call(repeatModel, processRepeats, this);
+      // only append frags when we have newEl's found -- etc.
       if (newEl) this.parentNode.appendChild(frag);
     }
   }
@@ -305,6 +348,11 @@ var murk = (function(fn) {
     var attrs = attr(this);
     count = attrs(opts.selectorPrefix + '-count');
     attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
+    // keep visual refence we're bound
+    // to this elem
+    if (!attrs(opts.selectorPrefix + '-bound')) {
+      attrs(opts.selectorPrefix + '-bound', true);
+    }
   }
 
   // just a wrapper for elem.[set/get]Attribute()

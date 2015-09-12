@@ -125,7 +125,7 @@
   <div class="form-row errors" data-murk="formErrors" data-murk-id="repeat"></div>
 
   <div class="pr cf">
-    Repeat Sizes1:
+    Repeat Sizes:
     <a href="#" data-murk-example-amounts="20">20</a> |
     <a href="#" data-murk-example-amounts="100">100</a> |
     <a href="#" data-murk-example-amounts="1000">1000</a> |
@@ -166,7 +166,7 @@
   <pre id="repeatModel"></pre>
 
   <h3>Example usage: </h3>
-  <pre class="cf" id="repeatJs">var repeatExample = (function(w,d) {
+  <!-- <pre class="cf" id="repeatJs">var repeatExample = (function(w,d) {
   var modelOutput, m;
 
   m = murk({
@@ -184,9 +184,9 @@
 
     m.on('formErrors', function(key) {
       this.style.display = (!m.state.model[key] ? 'none' : 'block');
-      example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
+      example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
     }).on('repeatedExample', function() {
-      example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
+      example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
     }).set({
       formErrors: false,
       repeatedExample: [{
@@ -195,7 +195,7 @@
       }]
     });
 
-    example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
+    example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
 
     $('[data-murk-example-amounts]').on('click', function() {
       var data = this.dataset;
@@ -246,7 +246,7 @@
         }
 
       } else if (data.murkExampleButton == 'remove') {
-        ref = ref.splice(1, ref.length-1);
+        ref.splice(ref.length-1,1);
         m.set(data.murkExampleItem, ref);
       }
     });
@@ -257,7 +257,7 @@
 
   return m;
 
-})(window,document);</pre>
+})(window,document);</pre> -->
 
   <hr/>
 
