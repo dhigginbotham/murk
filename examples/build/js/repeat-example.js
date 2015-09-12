@@ -27,22 +27,19 @@ var repeatExample = (function(w,d) {
       }]
     });
 
-
     example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
 
     $('[data-murk-example-amounts]').on('click', function() {
       var data = this.dataset;
       var ref = m.get('repeatedExample');
       for (var i=0;i<parseInt(data.murkExampleAmounts,0);++i) {
-        ref.push({ name: 'murk', age: (5+i)});
+        window.setTimeout(function() {
+          ref.push({ name: 'murk', age: (5+i)});
+        },0);
       }
       m.set('repeatedExample', ref);
       return false;
     });
-
-    // $('[data-murk-example="repeat"]').on('keyup blur', function() {
-    //   example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
-    // });
 
     $('[data-murk-example-button]').on('click', function() {
       var data = this.dataset;
