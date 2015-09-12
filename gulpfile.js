@@ -8,12 +8,7 @@ var gulp = require('gulp'),
     grename = require('gulp-rename'),
     fs = require('fs');
 
-var templateFiles = { 
-  basicJs: fs.readFileSync('./examples/build/js/basic-example.js'),
-  repeatJs: fs.readFileSync('./examples/build/js/repeat-example.js'),
-  basicTmpl: fs.readFileSync('./examples/build/templates/basic-example.tmpl'),
-  repeatTmpl: fs.readFileSync('./examples/build/templates/repeat-example.tmpl')
-};
+
 
 gulp.task('min', function() {
   return gulp.src('./src/murk.js')
@@ -43,6 +38,12 @@ gulp.task('examples', function() {
 });
 
 gulp.task('template', ['examples'], function() {
+  var templateFiles = { 
+    basicJs: fs.readFileSync('./examples/build/js/basic-example.js'),
+    repeatJs: fs.readFileSync('./examples/build/js/repeat-example.js'),
+    basicTmpl: fs.readFileSync('./examples/build/templates/basic-example.tmpl'),
+    repeatTmpl: fs.readFileSync('./examples/build/templates/repeat-example.tmpl')
+  };
   return gulp.src('./examples/build/templates/layout.tmpl')
     .on('error', gutil.log)
     .pipe(gtemplate(templateFiles))
@@ -56,7 +57,7 @@ gulp.task('gh', function() {
 });
 
 gulp.task('watch', function() {
-  gulp.watch('./src/**/*', ['min', 'zip']);
+  gulp.watch(['./src/**/*','./examples/**/*'], ['min', 'zip', 'template']);
 });
 
 gulp.task('default', ['min', 'zip', 'watch']);

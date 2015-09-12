@@ -53,8 +53,9 @@ var murk = (function(fn) {
       // pass that reference if possible to
       // improve performance
       if (state.elems.hasOwnProperty(obj)) {
-        return collectElems(state.elems[obj]);
+        collectElems(state.elems[obj]);
       }
+      return this;
     } else {
       if (merge) {
         extend(state.model, obj);
@@ -132,18 +133,18 @@ var murk = (function(fn) {
         if (state.model.hasOwnProperty(key)) {
           // we only want to modify elems that 
           // have changed their values
-          if (!state.model[key] ||
-            dec(attrs(opts.selectorPrefix + '-val')) != state.model[key] ||
-            typeof state.model[key] == 'object') {
+          // if (!state.model[key] ||
+          if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key] ||
+              typeof state.model[key] == 'object') {
             // keep track of our elems to use
             // later as reference
             // handle any subscribers on this elem
             handleSubscribers(key);
-            ++state.totalCount;
           }
         } else {
           attrs(opts.selectorPrefix + '-bound', false);
         }
+        ++state.totalCount;
       }
     }
   }
@@ -171,12 +172,11 @@ var murk = (function(fn) {
     return this;
   }
 
-  function templateRepeat(node) {
+  function processNodes(node) {
     var nodeAttrs = attr(node);
     if (nodeAttrs) {
       var repeatKey = nodeAttrs(opts.selectorPrefix + '-repeat');
       if (repeatKey) {
-        node.parentNode.style.display = 'inherit';
         if (this.hasOwnProperty(repeatKey)) {
           node.innerHTML = this[repeatKey];
         }
@@ -186,8 +186,8 @@ var murk = (function(fn) {
 
   // this is better ;D
   function handleRepeat(key) {
+    var repeatModel, attrs, isRepeated, repeatElKeys, frag, processRepeats, newEl = false;
     if (state.model[key] instanceof Array) {
-      var repeatModel, attrs, isRepeated, repeatKeys, frag, processRepeats, isNew = false;
       repeatModel = state.model[key];
       attrs = attr(this);
       isRepeated = attrs(opts.selectorPrefix + '-repeat');
@@ -199,36 +199,42 @@ var murk = (function(fn) {
           }
         }
         frag = document.createDocumentFragment();
-        repeatKeys = Object.keys(state.repeats[key].elems);
-        if (repeatKeys.length > repeatModel.length) {
-          for(var o=repeatModel.length;o<repeatKeys.length;++o) {
-            state.repeats[key].elems[repeatKeys[o]].style.display = 'none';
+        repeatElKeys = Object.keys(state.repeats[key].elems);
+        if (repeatElKeys.length > repeatModel.length) {
+          for(var o=repeatModel.length;o<repeatElKeys.length;++o) {
+            state.repeats[key].elems[repeatElKeys[o]].style.display = 'none';
           }
         }
         processRepeats = function(current, i) {
-          var domRef, domAttrs, nodes, newKey = (key + '.$' + i);
+          var curEl, curAtts, newKey = (key + '.$' + i);
           if (!state.repeats[key].elems.hasOwnProperty(newKey)) {
             state.repeats[key].elems[newKey] = this.cloneNode(true);
-            isNew = true;
+            this.style.display = 'none';
+            newEl = true;
           }
-          domRef = state.repeats[key].elems[newKey];
-          domAttrs = attr(domRef);
-          if (domAttrs) {
-            domAttrs(opts.selectorPrefix, 'rm');
-            domAttrs(opts.selectorPrefix + '-repeat', 'rm');
-            domAttrs(opts.selectorPrefix + '-parent', key);
-            domAttrs(opts.selectorPrefix + '-index', i);
-            if (typeof current == 'object') {
-              nodes = domRef.getElementsByTagName('*');
-              Array.prototype.forEach.call(nodes, templateRepeat, current);
-            } else {
-              domRef.innerHTML = current;
+          curEl = state.repeats[key].elems[newKey];
+          if (curEl.innerHTML != repeatModel) {
+            curAtts = attr(curEl);
+            if (curAtts) {
+              if (curAtts(opts.selectorPrefix)) {
+                curAtts(opts.selectorPrefix, 'rm');
+                curAtts(opts.selectorPrefix + '-repeat', 'rm');
+                curAtts(opts.selectorPrefix + '-count', 'rm');
+                curAtts(opts.selectorPrefix + '-parent', key);
+                curAtts(opts.selectorPrefix + '-index', i);
+              }
+              if (typeof current == 'object') {
+                Array.prototype.forEach.call(curEl.getElementsByTagName('*'), processNodes, current);
+              } else {
+                curEl.innerHTML = current;
+              }
+              curEl.style.display = 'block';
+              if (newEl) frag.appendChild(curEl);
             }
-            if (isNew) frag.appendChild(domRef);
           }
         };
         Array.prototype.forEach.call(repeatModel, processRepeats, this);
-        if (state.repeats.hasOwnProperty(key) && isNew) this.parentNode.appendChild(frag);
+        if (state.repeats.hasOwnProperty(key) && newEl) this.parentNode.appendChild(frag);
       }
     }
   }
@@ -301,6 +307,7 @@ var murk = (function(fn) {
       // newly bound value
       attrs(opts.selectorPrefix + '-val', enc(state.model[key]));
       this.innerHTML = state.model[key];
+      if (opts.dev) console.log(key, state.totalCount);
     }
   }
   

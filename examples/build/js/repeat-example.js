@@ -16,8 +16,9 @@ var repeatExample = (function(w,d) {
 
     m.on('formErrors', function(key) {
       this.style.display = (!m.state.model[key] ? 'none' : 'block');
+      example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
     }).on('repeatedExample', function() {
-      modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys, count: m.state.totalCount},null,2);
+      example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
     }).set({
       formErrors: false,
       repeatedExample: [{
@@ -29,10 +30,10 @@ var repeatExample = (function(w,d) {
       }]
     });
 
-    modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys},null,2);
+    example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
 
     $('[data-murk-example="repeat"]').on('keyup blur', function() {
-      modelOutput.innerHTML = JSON.stringify({model: m.state.model, keys: m.state.keys, count: m.state.totalCount},null,2);
+      example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
     });
 
     $('[data-murk-example-button]').on('click', function() {
@@ -43,23 +44,36 @@ var repeatExample = (function(w,d) {
           name: null,
           age: null
         };
+        var safePerson = {
+          msg: null
+        };
         var $items = $('[data-murk-example-key]');
         for (var i=0;i<$items.length;++i) {
           var item = $items[i];
           var itemData = item.dataset;
           if (item.value) {
             person[itemData.murkExampleKey] = item.value;
-          } else {
-            m.set('formErrors', 'You must fill out ' + itemData.murkExampleKey);
           }
         }
+
+        if (!person.name && !person.age) {
+          safePerson.msg = 'Name and age fields required';
+        } else if (!person.age && person.name) {
+          safePerson.msg = 'Age field required';
+        } else if (!person.name && person.age) {
+          safePerson.msg = 'Name field required';
+        }
+
         if (person.name && person.age) {
           ref.push(person);
           m.set(data.murkExampleItem, ref);
           if (m.get('formErrors')) m.set('formErrors', false);
         } else {
-          m.set('formErrors', 'You must fill out both name and age');
+          if (safePerson.msg) {
+            m.set('formErrors', safePerson.msg);
+          }
         }
+
       } else if (data.murkExampleButton == 'remove') {
         ref = ref.splice(1, ref.length-1);
         m.set(data.murkExampleItem, ref);

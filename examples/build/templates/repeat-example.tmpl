@@ -1,11 +1,5 @@
 <div class="example-container repeat-example">
-  <div class="hero">
-    <div data-murk="repeatedExample" data-murk-repeat="true" data-murk-id="repeat">
-      <div data-murk-repeat="name"></div>
-      <div data-murk-repeat="age"></div>
-    </div>
-  </div>
-  
+
   <div class="form-row errors" data-murk="formErrors" data-murk-id="repeat"></div>
   <div class="form-row">
     <label for="repeatedExampleName">Name:</label>
@@ -20,5 +14,16 @@
     <button data-murk-example-button="add" data-murk-example-item="repeatedExample">Add</button>
     <button data-murk-example-button="remove" data-murk-example-item="repeatedExample">Remove</button>
   </div>
-
+  
+  <div class="hero">
+    <div data-murk="repeatedExample" data-murk-repeat="true" data-murk-id="repeat">
+      <div>
+        Name: <span data-murk-repeat="name"></span>
+      </div>
+      <div>
+        Age: <span data-murk-repeat="age"></span>
+      </div>
+    </div>
+  </div>
+  
 </div>
