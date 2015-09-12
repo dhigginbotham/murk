@@ -120,6 +120,13 @@
   <div class="example-container repeat-example">
 
   <div class="form-row errors" data-murk="formErrors" data-murk-id="repeat"></div>
+  <div class="pr cf">
+    Do: 
+    <a href="#" data-murk-example-amounts="20">20</a>
+    <a href="#" data-murk-example-amounts="100">100</a>
+    <a href="#" data-murk-example-amounts="1000">1000</a>
+    <a href="#" data-murk-example-amounts="5000">5000</a>
+  </div>
   <div class="form-row">
     <label for="repeatedExampleName">Name:</label>
     <input type="text" id="repeatedExampleName" data-murk-example-key="name" data-murk-example="repeat"/>
@@ -166,15 +173,6 @@
 
   function init() {
 
-    var demoArr = [];
-
-    for (var i=0;i<1000;++i) {
-      demoArr.push({
-        name: 'polly',
-        age: 5+i
-      });
-    }
-
     modelOutput = d.getElementById('repeatModel');
 
     m.on('formErrors', function(key) {
@@ -183,18 +181,29 @@
     }).on('repeatedExample', function() {
       example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
     }).set({
-      formErrors: false
-      , repeatedExample: demoArr
+      formErrors: false,
+      repeatedExample: [{
+        name: 'murk',
+        age: 5
+      }]
     });
 
-
-    m.set('repeatedExample', demoArr);
 
     example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
 
-    $('[data-murk-example="repeat"]').on('keyup blur', function() {
-      example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
+    $('[data-murk-example-amounts]').on('click', function() {
+      var data = this.dataset;
+      var ref = m.get('repeatedExample');
+      for (var i=0;i<parseInt(data.murkExampleAmounts,0);++i) {
+        ref.push({ name: 'murk', age: (5+i)});
+      }
+      m.set('repeatedExample', ref);
+      return false;
     });
+
+    // $('[data-murk-example="repeat"]').on('keyup blur', function() {
+    //   example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
+    // });
 
     $('[data-murk-example-button]').on('click', function() {
       var data = this.dataset;

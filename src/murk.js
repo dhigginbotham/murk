@@ -221,7 +221,6 @@ var murk = (function(fn) {
           if (curEl.innerHTML != repeatModel) {
             curAtts = attr(curEl);
             if (newEl) {
-              curAtts(opts.selectorPrefix, 'rm');
               curAtts(opts.selectorPrefix + '-count', 'rm');
               curAtts(opts.selectorPrefix + '-index', i);
             }
