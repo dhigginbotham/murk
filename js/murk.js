@@ -24,13 +24,11 @@ var murk = (function(fn) {
     selectorPrefix: 'data-murk',
     dev: false,
     id: state.start,
-    bindRepeats: false,
+    bindRepeats: true,
     defaultSubscribers: [handleRepeat, elemBindingEvent, processFiltersEvent, trackCountEvent]
   };
 
   if (options) extend(opts, options);
-
-  console.log(opts);
 
   var enc = encodeURIComponent;
   var dec = decodeURIComponent;
@@ -163,24 +161,17 @@ var murk = (function(fn) {
   
   // processes nodes for repeats <3
   function processNodes(node) {
-    var repeatKey, atts = attr(node);
+    var repeatKey, atts = attr(node), val;
     if (atts) {
       repeatKey = atts(opts.selectorPrefix + '-repeat-key');
       if (repeatKey) {
         // we want access to `null`,`false` so check
         // for its property name
         if (this.hasOwnProperty(repeatKey)) {
-          // if you do pass `null` well recognize that
-          // as a good way to empty our elem
-          if (this[repeatKey] === null ||
-              this[repeatKey] === 'null') {
-            node.innerHTML = '';
-          } else {
-            // you've got this! lets make magic and
-            // pass in some dataz
-            if (node.innerHTML != this[repeatKey]) {
-              node.innerHTML = this[repeatKey];
-            }
+          // you've got this! lets make magic and
+          // pass in some dataz
+          if (node.innerHTML != this[repeatKey]) {
+            setupTextNode(node, this[repeatKey]);
           }
           // hey, if you want to bind repeats --
           // know that it's possible with this opt
@@ -293,10 +284,7 @@ var murk = (function(fn) {
           if (state.filters.hasOwnProperty(filter) && 
             state.model.hasOwnProperty(key)) {
             var val = state.filters[filter].call(this, state.model[key]);
-            if (typeof val != 'undefined') {
-              attrs(opts.selectorPrefix + '-filtered-val', enc(val));
-              this.innerHTML = val;
-            }
+            setupTextNode(this, val);
           }
         };
         if (filters.indexOf(',') != -1) filters = filters.split(',');
@@ -311,9 +299,7 @@ var murk = (function(fn) {
   // overwrite any previously defined
   // filters.
   function registerFilter(key, fn) {
-    if (key && fn) {
-      state.filters[key] = fn;
-    }
+    if (key && fn) state.filters[key] = fn;
     return this;
   }
 
@@ -325,12 +311,10 @@ var murk = (function(fn) {
   function elemBindingEvent(key) {
     if (!(state.model[key] instanceof Array) && 
       typeof state.model[key] != 'object') {
-      var attrs = attr(this);
       // encode and set a reference of our 
       // newly bound value
       if (state.model[key] != this.innerHTML) {
-        this.innerHTML = state.model[key];
-        if (opts.dev) console.log(key, state.totalCount);
+        setupTextNode(this, state.model[key]);
       }
     }
   }
@@ -339,10 +323,22 @@ var murk = (function(fn) {
   // times we're interacting with our 
   // elems
   function trackCountEvent() {
-    var count;
-    var attrs = attr(this);
+    var count, attrs = attr(this);
     count = attrs(opts.selectorPrefix + '-count');
     attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
+  }
+
+  // handles dom manipulation
+  function setupTextNode(el, val) {
+    var tn;
+    if (typeof val != 'undefined') {
+      tn = document.createTextNode(val);
+      if (el.hasChildNodes()) {
+        el.childNodes[0].nodeValue = val;
+      } else {
+        el.appendChild(tn);
+      }
+    }
   }
 
   // just a wrapper for elem.[set/get]Attribute()
@@ -356,8 +352,7 @@ var murk = (function(fn) {
         } else {
           return elem.setAttribute(key, val);
         }
-      }
-      // }.bind(elem);
+      };
     } else {
       return null;
     }

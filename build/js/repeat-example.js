@@ -25,8 +25,8 @@ var repeatExample = (function(w,d) {
     m.on('formErrors', function(key) {
       this.style.display = (!m.state.model[key] ? 'none' : 'block');
       example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
-    // }).on('repeatedExample', function() {
-    //   example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
+    }).on('repeatedExample', function() {
+      example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
     }).set({
       formErrors: false,
       repeatedExample: lotsOfRepeats
