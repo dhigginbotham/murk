@@ -130,15 +130,9 @@ var murk = (function(fn) {
           }
         }
         if (state.model.hasOwnProperty(key)) {
-          // we only want to modify elems that 
-          // have changed their values
-          if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key]) {
-            // handle any subscribers on this elem
-            handleSubscribers(key);
-            ++state.totalCount;
-          }
-        // } else {
-          // attrs(opts.selectorPrefix + '-bound', false);
+          // handle any subscribers on this elem
+          handleSubscribers(key);
+          ++state.totalCount;
         }
       }
     }
@@ -296,15 +290,10 @@ var murk = (function(fn) {
       filters = attrs(opts.selectorPrefix + '-filter');
       if (filters) {
         processFilter = function(filter) {
-          var filteredVal, val;
           if (state.filters.hasOwnProperty(filter) && 
             state.model.hasOwnProperty(key)) {
-            filteredVal = (attrs(opts.selectorPrefix + '-filtered-val') ? 
-              dec(attrs(opts.selectorPrefix + '-filtered-val')) : 
-              null);
-            val = state.filters[filter].call(this, state.model[key]);
-            if (typeof val != 'undefined' && 
-              filteredVal != val) {
+            var val = state.filters[filter].call(this, state.model[key]);
+            if (typeof val != 'undefined') {
               attrs(opts.selectorPrefix + '-filtered-val', enc(val));
               this.innerHTML = val;
             }
@@ -339,7 +328,6 @@ var murk = (function(fn) {
       var attrs = attr(this);
       // encode and set a reference of our 
       // newly bound value
-      // attrs(opts.selectorPrefix + '-val', enc(state.model[key]));
       if (state.model[key] != this.innerHTML) {
         this.innerHTML = state.model[key];
         if (opts.dev) console.log(key, state.totalCount);
@@ -362,13 +350,14 @@ var murk = (function(fn) {
     if (typeof elem != 'undefined') {
       return function $attr(key, val) {
         if(typeof val == 'undefined') {
-          return this.getAttribute(key);
+          return elem.getAttribute(key);
         } else if (val == 'rm') {
-          return this.removeAttribute(key);
+          return elem.removeAttribute(key);
         } else {
-          return this.setAttribute(key, val);
+          return elem.setAttribute(key, val);
         }
-      }.bind(elem);
+      }
+      // }.bind(elem);
     } else {
       return null;
     }
