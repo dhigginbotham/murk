@@ -7,17 +7,16 @@
 </head>
 <body>
 
-  <h1>
-    MURK
-    <a href="https://github.com/dhigginbotham/murk" class="small pr">View on Github!</a>
-  </h1>  
+  <div class="loading-wrapper" id="example-container">
+    <h1>
+      MURK
+      <a href="https://github.com/dhigginbotham/murk" class="small pr">View on Github!</a>
+    </h1>  
 
-  <hr>
+    <h3 name="repeat-example">Basic Example: </h3>
 
-  <h3 name="repeat-example">Basic Example: </h3>
-
-  <div class="cf">
-    <div class="example-container basic-example cf">
+    <div class="cf">
+      <div class="example-container basic-example cf">
   <div class="hero">
     <div data-murk-id="basic" data-murk="firstExample" data-murk-filter="reverseStr"></div>
     <div data-murk-id="basic" data-murk="secondExample"></div>
@@ -62,13 +61,13 @@
   </div>  
 </div>
 
-  </div>
+    </div>
 
-  <h3>Current model: </h3>
-  <pre id="basicModel"></pre>
+    <h3>Current model: </h3>
+    <pre id="basicModel"></pre>
 
-  <h3>Example usage: </h3>
-  <pre class="cf" id="basicJs">var basicExample = (function(w,d) {
+    <h3>Example usage: </h3>
+    <pre class="cf" id="basicJs">var basicExample = (function(w,d) {
   var modelOutput, m;
 
   m = murk({
@@ -115,12 +114,12 @@
 
 })(window,document);</pre>
 
-  <hr/>
+    <hr/>
 
-  <h3 name="repeat-example">Repeat Example: </h3>
+    <h3 name="repeat-example">Repeat Example: </h3>
 
-  <div class="cf">
-    <div class="example-container repeat-example cf">
+    <div class="cf">
+      <div class="example-container repeat-example cf">
 
   <div class="form-row errors" data-murk="formErrors" data-murk-id="repeat"></div>
 
@@ -160,13 +159,13 @@
   
 </div>
 
-  </div>
+    </div>
 
-  <h3>Current model: </h3>
-  <pre id="repeatModel"></pre>
+    <h3>Current model: </h3>
+    <pre id="repeatModel"></pre>
 
-  <h3>Example usage: </h3>
-  <!-- <pre class="cf" id="repeatJs">var repeatExample = (function(w,d) {
+    <h3>Example usage: </h3>
+    <!-- <pre class="cf" id="repeatJs">var repeatExample = (function(w,d) {
   var modelOutput, m;
 
   m = murk({
@@ -264,7 +263,8 @@
 
 })(window,document);</pre> -->
 
-  <hr/>
+    <hr/>
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   <script src="js/murk.js"></script>
