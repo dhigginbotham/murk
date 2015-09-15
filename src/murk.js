@@ -191,12 +191,11 @@
   // as well as the current key being processed. it tries to be extremely
   // light by only doing reads, and saving writes until the end.
   function handleRepeat(key) {
-    var repeatModel, attrs, repeatElKeys, frag, processRepeats;
+    var repeatModel, repeatElKeys, frag, processRepeats;
     if (state.model[key] instanceof Array) {
       // hide our first elem, so we can use it later
       if (this.style.display != 'none') this.style.display = 'none';
       repeatModel = state.model[key];
-      attrs = attr(this);
       
       // we keep reference of all of our repeats
       // inside of state.repeats, so we always
@@ -223,7 +222,7 @@
 
       // processes each repeat individually
       processRepeats = function(repeat, i) {
-        var el, atts, $key = (key + '.$' + i), newEl = false;
+        var el, $key = (key + '.$' + i), newEl = false;
         
         // we make a new key, out of our current key
         // and setup any new elems that we might need
@@ -239,14 +238,13 @@
         // are fresh, and non object things
         // can be check simply like this
         if (el.innerHTML != repeatModel) {
-          atts = attr(el);
 
           // new els get sanitized
           if (newEl) {
-            atts(opts.selectorPrefix, 'rm');
-            atts(opts.selectorPrefix + '-count', 'rm');
-            atts(opts.selectorPrefix + '-bound', 'rm');
-            atts(opts.selectorPrefix + '-repeat', $key);
+            delete el.dataset.murk;
+            delete el.dataset.murkCount;
+            delete el.dataset.murkBound;
+            el.dataset.murkRepeat = $key;
           }
           if (typeof repeat == 'object') {
             // allows us to keep ref of new $key,
@@ -255,7 +253,7 @@
             repeat.$key = $key;
             Array.prototype.forEach.call(el.getElementsByTagName('*'), processNodes, repeat);
           } else {
-            el.innerHTML = repeat;
+            setupTextNode(el, repeat);
           }
           // let their be light XD
           if (el.style.display == 'none') el.style.display = '';
@@ -273,26 +271,19 @@
   // proccesses the filters added to any
   // given bound elem
   function processFiltersEvent(key) {
-    var attrs, filters, filterMutate, processFilter; 
-    attrs = attr(this);
-    if (attrs) {
-      filters = attrs(opts.selectorPrefix + '-filter');
-      filterMutate = attrs(opts.selectorPrefix + '-filter-mutate');
-      if (filters) {
-        processFilter = function(filter) {
-          if (state.filters.hasOwnProperty(filter) && 
-            state.model.hasOwnProperty(key)) {
-            var val = state.filters[filter].call(this, state.model[key]);
-            if (typeof val != 'undefined' && filterMutate) {
-              state.model[key] = val;
-            }
-            setupTextNode(this, val);
-          }
-        };
-        if (filters.indexOf(',') != -1) filters = filters.split(',');
-        if (!(filters instanceof Array)) filters = [filters];
-        Array.prototype.forEach.call(filters, processFilter, this);
-      }
+    var filters, processFilter; 
+    if ('murkFilter' in this.dataset) {
+      filters = this.dataset.murkFilter;
+      processFilter = function(filter) {
+        if (state.filters.hasOwnProperty(filter) && 
+          state.model.hasOwnProperty(key)) {
+          var val = state.filters[filter].call(this, state.model[key]);
+          setupTextNode(this, val);
+        }
+      };
+      if (filters.indexOf(',') != -1) filters = filters.split(',');
+      if (!(filters instanceof Array)) filters = [filters];
+      Array.prototype.forEach.call(filters, processFilter, this);
     }
   }
 
@@ -325,9 +316,8 @@
   // times we're interacting with our 
   // elems
   function trackCountEvent() {
-    var count, attrs = attr(this);
-    count = attrs(opts.selectorPrefix + '-count');
-    attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
+    var count = ('murkCount' in this.dataset ? this.dataset.murkCount : null);
+    this.dataset.murkCount = (count ? parseInt(count,0)+1 : 1);
   }
 
   // handles dom manipulation
