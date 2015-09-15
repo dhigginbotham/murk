@@ -1,10 +1,10 @@
-var murk = (function(fn) {
+;(function(def, fn) {
   if (typeof module != 'undefined' && module.exports) {
     module.exports = fn;
   } else {
-    return fn;
+    window[def] = fn;
   }
-})(function(options) {
+})('murk', function murk(options) {
   if (!(this instanceof murk)) return new murk(options);
   // state reference, mostly for 
   // dev/internal use and context
@@ -24,7 +24,6 @@ var murk = (function(fn) {
     selectorPrefix: 'data-murk',
     dev: false,
     id: state.start,
-    bindRepeats: false,
     defaultSubscribers: [handleRepeat, elemBindingEvent, processFiltersEvent, trackCountEvent]
   };
 
@@ -45,6 +44,7 @@ var murk = (function(fn) {
     // this way you're not overwriting
     // the model unless you intend to
     merge = (typeof merge != 'undefined' ? merge : true);
+
     if (typeof str != 'undefined' && typeof obj == 'string') {
       state.model[obj] = str;
       // if we've set this elem before we'll
@@ -174,7 +174,7 @@ var murk = (function(fn) {
           // hey, if you want to bind repeats --
           // know that it's possible with this opt
           // but also know it isn't quite as performant
-          if (opts.bindRepeats || isBind) {
+          if (isBind) {
             var $$key = this.$key + '.' + repeatKey;
             if (!atts(opts.selectorPrefix)) {
               atts(opts.selectorPrefix, $$key);
@@ -332,9 +332,9 @@ var murk = (function(fn) {
 
   // handles dom manipulation
   function setupTextNode(el, val) {
-    var tn;
     if (typeof val != 'undefined') {
-      tn = document.createTextNode(val);
+      if (val === 'null' || val === null) val = '';
+      var tn = document.createTextNode(val);
       if (el.hasChildNodes()) {
         el.childNodes[0].nodeValue = val;
       } else {
