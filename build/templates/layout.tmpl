@@ -7,40 +7,40 @@
 </head>
 <body>
 
-  <h1>
-    MURK
-    <a href="https://github.com/dhigginbotham/murk" class="small pr">View on Github!</a>
-  </h1>  
+  <div class="loading-wrapper" id="example-container">
+    <h1>
+      MURK
+      <a href="https://github.com/dhigginbotham/murk" class="small pr">View on Github!</a>
+    </h1>  
 
-  <hr>
+    <h3 name="repeat-example">Basic Example: </h3>
 
-  <h3 name="repeat-example">Basic Example: </h3>
+    <div class="cf">
+      <%=basicTmpl%>
+    </div>
 
-  <div class="cf">
-    <%=basicTmpl%>
+    <h3>Current model: </h3>
+    <pre id="basicModel"></pre>
+
+    <h3>Example usage: </h3>
+    <pre class="cf" id="basicJs"><%=basicJs%></pre>
+
+    <hr/>
+
+    <h3 name="repeat-example">Repeat Example: </h3>
+
+    <div class="cf">
+      <%=repeatTmpl%>
+    </div>
+
+    <h3>Current model: </h3>
+    <pre id="repeatModel"></pre>
+
+    <h3>Example usage: </h3>
+    <!-- <pre class="cf" id="repeatJs"><%=repeatJs%></pre> -->
+
+    <hr/>
   </div>
-
-  <h3>Current model: </h3>
-  <pre id="basicModel"></pre>
-
-  <h3>Example usage: </h3>
-  <pre class="cf" id="basicJs"><%=basicJs%></pre>
-
-  <hr/>
-
-  <h3 name="repeat-example">Repeat Example: </h3>
-
-  <div class="cf">
-    <%=repeatTmpl%>
-  </div>
-
-  <h3>Current model: </h3>
-  <pre id="repeatModel"></pre>
-
-  <h3>Example usage: </h3>
-  <!-- <pre class="cf" id="repeatJs"><%=repeatJs%></pre> -->
-
-  <hr/>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   <script src="js/murk.js"></script>
