@@ -24,14 +24,11 @@ var murk = (function(fn) {
     selectorPrefix: 'data-murk',
     dev: false,
     id: state.start,
-    bindRepeats: true,
+    bindRepeats: false,
     defaultSubscribers: [handleRepeat, elemBindingEvent, processFiltersEvent, trackCountEvent]
   };
 
   if (options) extend(opts, options);
-
-  var enc = encodeURIComponent;
-  var dec = decodeURIComponent;
 
   // only way to interact with our 
   // model, this way we can use this
@@ -161,9 +158,10 @@ var murk = (function(fn) {
   
   // processes nodes for repeats <3
   function processNodes(node) {
-    var repeatKey, atts = attr(node), val;
+    var repeatKey, isBindChildren, atts = attr(node);
     if (atts) {
       repeatKey = atts(opts.selectorPrefix + '-repeat-key');
+      isBindChildren = atts(opts.selectorPrefix + '-repeat-bind-children');
       if (repeatKey) {
         // we want access to `null`,`false` so check
         // for its property name
@@ -176,7 +174,7 @@ var murk = (function(fn) {
           // hey, if you want to bind repeats --
           // know that it's possible with this opt
           // but also know it isn't quite as performant
-          if (opts.bindRepeats) {
+          if (opts.bindRepeats || isBindChildren) {
             var $$key = this.$key + '.' + repeatKey;
             if (!atts(opts.selectorPrefix)) {
               atts(opts.selectorPrefix, $$key);
