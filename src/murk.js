@@ -30,8 +30,6 @@ var murk = (function(fn) {
 
   if (options) extend(opts, options);
 
-  console.log(opts);
-
   var enc = encodeURIComponent;
   var dec = decodeURIComponent;
 
@@ -163,7 +161,7 @@ var murk = (function(fn) {
   
   // processes nodes for repeats <3
   function processNodes(node) {
-    var repeatKey, atts = attr(node);
+    var repeatKey, atts = attr(node), val;
     if (atts) {
       repeatKey = atts(opts.selectorPrefix + '-repeat-key');
       if (repeatKey) {
@@ -174,12 +172,26 @@ var murk = (function(fn) {
           // as a good way to empty our elem
           if (this[repeatKey] === null ||
               this[repeatKey] === 'null') {
-            node.innerHTML = '';
+            // node.innerHTML = '';
+            setupTextNode(node, '');
+            // val = document.createTextNode('');
+            // if (node.hasChildNodes()) {
+            //   node.replaceChild(node.childNodes[0], val);
+            // } else {
+            //   node.appendChild(val);
+            // }
           } else {
             // you've got this! lets make magic and
             // pass in some dataz
             if (node.innerHTML != this[repeatKey]) {
-              node.innerHTML = this[repeatKey];
+              setupTextNode(node, this[repeatKey]);
+              // val = document.createTextNode(this[repeatKey]);
+              // // node.innerHTML = this[repeatKey];
+              // if (node.hasChildNodes()) {
+              //   node.replaceChild(node.childNodes[0], val);
+              // } else {
+              //   node.appendChild(val);
+              // }
             }
           }
           // hey, if you want to bind repeats --
@@ -294,8 +306,7 @@ var murk = (function(fn) {
             state.model.hasOwnProperty(key)) {
             var val = state.filters[filter].call(this, state.model[key]);
             if (typeof val != 'undefined') {
-              attrs(opts.selectorPrefix + '-filtered-val', enc(val));
-              this.innerHTML = val;
+              setupTextNode(this, val);
             }
           }
         };
@@ -325,12 +336,10 @@ var murk = (function(fn) {
   function elemBindingEvent(key) {
     if (!(state.model[key] instanceof Array) && 
       typeof state.model[key] != 'object') {
-      var attrs = attr(this);
       // encode and set a reference of our 
       // newly bound value
       if (state.model[key] != this.innerHTML) {
-        this.innerHTML = state.model[key];
-        if (opts.dev) console.log(key, state.totalCount);
+        setupTextNode(this, state.model[key]);
       }
     }
   }
@@ -345,6 +354,19 @@ var murk = (function(fn) {
     attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
   }
 
+  // handles dom manipulation
+  function setupTextNode(el, val) {
+    var newVal = null;
+    if (typeof val != 'undefined') {
+      newVal = document.createTextNode(val);
+    }
+    if (el.hasChildNodes()) {
+      el.childNodes[0].nodeValue = val;
+    } else {
+      el.appendChild(newVal);
+    }
+  }
+
   // just a wrapper for elem.[set/get]Attribute()
   function attr(elem) {
     if (typeof elem != 'undefined') {
@@ -356,8 +378,7 @@ var murk = (function(fn) {
         } else {
           return elem.setAttribute(key, val);
         }
-      }
-      // }.bind(elem);
+      };
     } else {
       return null;
     }
