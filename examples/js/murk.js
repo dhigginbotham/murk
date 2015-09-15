@@ -24,10 +24,13 @@ var murk = (function(fn) {
     selectorPrefix: 'data-murk',
     dev: false,
     id: state.start,
+    bindRepeats: false,
     defaultSubscribers: [handleRepeat, elemBindingEvent, processFiltersEvent, trackCountEvent]
   };
 
   if (options) extend(opts, options);
+
+  console.log(opts);
 
   var enc = encodeURIComponent;
   var dec = decodeURIComponent;
@@ -129,16 +132,13 @@ var murk = (function(fn) {
         if (state.model.hasOwnProperty(key)) {
           // we only want to modify elems that 
           // have changed their values
-          // if (!state.model[key] ||
           if (dec(attrs(opts.selectorPrefix + '-val')) != state.model[key]) {
-            // keep track of our elems to use
-            // later as reference
             // handle any subscribers on this elem
             handleSubscribers(key);
             ++state.totalCount;
           }
-        } else {
-          attrs(opts.selectorPrefix + '-bound', false);
+        // } else {
+          // attrs(opts.selectorPrefix + '-bound', false);
         }
       }
     }
@@ -150,7 +150,7 @@ var murk = (function(fn) {
     if (!state.subscribers.hasOwnProperty(key)) {
       state.subscribers[key] = Array.prototype.slice.call(opts.defaultSubscribers);
     }
-    var fns = Array.prototype.slice.call(state.subscribers[key]);
+    var fn, fns = Array.prototype.slice.call(state.subscribers[key]);
     while (fn = fns.shift()) fn.call(state.elems[key], key);
   }
 
@@ -173,23 +173,32 @@ var murk = (function(fn) {
     if (atts) {
       repeatKey = atts(opts.selectorPrefix + '-repeat-key');
       if (repeatKey) {
+        // we want access to `null`,`false` so check
+        // for its property name
         if (this.hasOwnProperty(repeatKey)) {
-          var $$key = this.$key + '.' + repeatKey;
-          if (!atts(opts.selectorPrefix)) {
-            atts(opts.selectorPrefix, $$key);
-          }
+          // if you do pass `null` well recognize that
+          // as a good way to empty our elem
           if (this[repeatKey] === null ||
               this[repeatKey] === 'null') {
             node.innerHTML = '';
           } else {
+            // you've got this! lets make magic and
+            // pass in some dataz
             if (node.innerHTML != this[repeatKey]) {
               node.innerHTML = this[repeatKey];
             }
           }
-        } else {
-          node.innerHTML = '';
+          // hey, if you want to bind repeats --
+          // know that it's possible with this opt
+          // but also know it isn't quite as performant
+          if (opts.bindRepeats) {
+            var $$key = this.$key + '.' + repeatKey;
+            if (!atts(opts.selectorPrefix)) {
+              atts(opts.selectorPrefix, $$key);
+            }
+            bindElem(node);
+          }
         }
-        bindElem(node);
       } 
     }
   }
@@ -199,7 +208,7 @@ var murk = (function(fn) {
   // as well as the current key being processed. it tries to be extremely
   // light by only doing reads, and saving writes until the end.
   function handleRepeat(key) {
-    var repeatModel, attrs, repeatElKeys, frag, processRepeats, newEl = false;
+    var repeatModel, attrs, repeatElKeys, frag, processRepeats;
     if (state.model[key] instanceof Array) {
       // hide our first elem, so we can use it later
       if (this.style.display != 'none') this.style.display = 'none';
@@ -231,15 +240,13 @@ var murk = (function(fn) {
 
       // processes each repeat individually
       processRepeats = function(repeat, i) {
-        var el, atts, $key = (key + '.$' + i);
+        var el, atts, $key = (key + '.$' + i), newEl = false;
         
         // we make a new key, out of our current key
         // and setup any new elems that we might need
         if (!state.repeats[key].hasOwnProperty($key)) {
           state.repeats[key][$key] = this.cloneNode(true);
           newEl = true;
-        } else {
-          newEl = false;
         }
 
         // keep ref of our current elem
@@ -276,7 +283,7 @@ var murk = (function(fn) {
       };
       Array.prototype.forEach.call(repeatModel, processRepeats, this);
       // only append frags when we have newEl's found -- etc.
-      if (newEl) this.parentNode.appendChild(frag);
+      if (frag.hasChildNodes()) this.parentNode.appendChild(frag);
     }
   }
 
@@ -332,7 +339,7 @@ var murk = (function(fn) {
       var attrs = attr(this);
       // encode and set a reference of our 
       // newly bound value
-      attrs(opts.selectorPrefix + '-val', enc(state.model[key]));
+      // attrs(opts.selectorPrefix + '-val', enc(state.model[key]));
       if (state.model[key] != this.innerHTML) {
         this.innerHTML = state.model[key];
         if (opts.dev) console.log(key, state.totalCount);
@@ -348,17 +355,12 @@ var murk = (function(fn) {
     var attrs = attr(this);
     count = attrs(opts.selectorPrefix + '-count');
     attrs(opts.selectorPrefix + '-count', (count ? parseInt(count,0)+1 : 1));
-    // keep visual refence we're bound
-    // to this elem
-    if (!attrs(opts.selectorPrefix + '-bound')) {
-      attrs(opts.selectorPrefix + '-bound', true);
-    }
   }
 
   // just a wrapper for elem.[set/get]Attribute()
   function attr(elem) {
     if (typeof elem != 'undefined') {
-      return function(key, val) {
+      return function $attr(key, val) {
         if(typeof val == 'undefined') {
           return this.getAttribute(key);
         } else if (val == 'rm') {

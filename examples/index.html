@@ -182,24 +182,29 @@
 
     modelOutput = d.getElementById('repeatModel');
 
+    var lotsOfRepeats = [];
+    for(var i=0;i<1;++i) {
+      lotsOfRepeats.push({
+        name: 'murk',
+        age: 5
+      });
+    }
+
     m.on('formErrors', function(key) {
       this.style.display = (!m.state.model[key] ? 'none' : 'block');
       example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
-    }).on('repeatedExample', function() {
-      example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
+    // }).on('repeatedExample', function() {
+    //   example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
     }).set({
       formErrors: false,
-      repeatedExample: [{
-        name: 'murk',
-        age: 5
-      }]
+      repeatedExample: lotsOfRepeats
     });
 
     example.updateModel(modelOutput,null,m.state.keys,m.state.totalCount);
 
     $('[data-murk-example-amounts]').on('click', function() {
       var data = this.dataset;
-      var ref = m.get('repeatedExample');
+      var ref = m.state.model.repeatedExample;
       for (var i=0;i<parseInt(data.murkExampleAmounts,0);++i) {
         ref.push({ name: 'murk', age: (5+i)});
       }
