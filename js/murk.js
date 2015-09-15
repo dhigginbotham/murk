@@ -158,10 +158,10 @@ var murk = (function(fn) {
   
   // processes nodes for repeats <3
   function processNodes(node) {
-    var repeatKey, isBindChildren, atts = attr(node);
+    var repeatKey, isBind, atts = attr(node);
     if (atts) {
       repeatKey = atts(opts.selectorPrefix + '-repeat-key');
-      isBindChildren = atts(opts.selectorPrefix + '-repeat-bind-children');
+      isBind = atts(opts.selectorPrefix + '-repeat-bind');
       if (repeatKey) {
         // we want access to `null`,`false` so check
         // for its property name
@@ -174,7 +174,7 @@ var murk = (function(fn) {
           // hey, if you want to bind repeats --
           // know that it's possible with this opt
           // but also know it isn't quite as performant
-          if (opts.bindRepeats || isBindChildren) {
+          if (opts.bindRepeats || isBind) {
             var $$key = this.$key + '.' + repeatKey;
             if (!atts(opts.selectorPrefix)) {
               atts(opts.selectorPrefix, $$key);
@@ -273,15 +273,19 @@ var murk = (function(fn) {
   // proccesses the filters added to any
   // given bound elem
   function processFiltersEvent(key) {
-    var attrs, filters, processFilter; 
+    var attrs, filters, filterMutate, processFilter; 
     attrs = attr(this);
     if (attrs) {
       filters = attrs(opts.selectorPrefix + '-filter');
+      filterMutate = attrs(opts.selectorPrefix + '-filter-mutate');
       if (filters) {
         processFilter = function(filter) {
           if (state.filters.hasOwnProperty(filter) && 
             state.model.hasOwnProperty(key)) {
             var val = state.filters[filter].call(this, state.model[key]);
+            if (typeof val != 'undefined' && filterMutate) {
+              state.model[key] = val;
+            }
             setupTextNode(this, val);
           }
         };

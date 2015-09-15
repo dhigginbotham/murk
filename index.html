@@ -21,7 +21,7 @@
     <div data-murk-id="basic" data-murk="firstExample" data-murk-filter="reverseStr"></div>
     <div data-murk-id="basic" data-murk="secondExample"></div>
     <div data-murk-id="basic" data-murk="thirdExample" data-murk-filter="highlightText"></div>
-    <div data-murk-id="basic" data-murk="fourthExample" data-murk-filter="reverseStr,highlightText">embedded example</div>
+    <div data-murk-id="basic" data-murk="fourthExample" data-murk-filter="reverseStr,highlightText" data-murk-filter-mutate="true">embedded example</div>
   </div>
 
   <div class="form-row">
@@ -149,7 +149,7 @@
   <div class="hero">
     <div data-murk="repeatedExample" data-murk-id="repeat">
       <div>
-        Name: <span data-murk-repeat-key="name" data-murk-filter="highlightText"></span>
+        Name: <span data-murk-repeat-key="name" data-murk-repeat-bind="true" data-murk-filter="highlightText"></span>
       </div>
       <div>
         Age: <span data-murk-repeat-key="age"></span>

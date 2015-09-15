@@ -2,7 +2,7 @@ var example = (function(w,d,pub) {
 
   var init = function() {
     var container = d.getElementById('example-container');
-    container.style.display = 'block';
+    container.className = container.className.replace('loading-wrapper', '');
   };
 
   pub.updateModel = function(el,model,keys,count) {
