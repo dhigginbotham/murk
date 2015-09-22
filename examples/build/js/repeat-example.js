@@ -16,10 +16,7 @@ var repeatExample = (function(w,d) {
 
     var lotsOfRepeats = [];
     for(var i=0;i<1;++i) {
-      lotsOfRepeats.push({
-        name: 'murk',
-        age: 5
-      });
+      lotsOfRepeats.push({name: 'murk', age: 5});
     }
 
     m.on('formErrors', function(key) {

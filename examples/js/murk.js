@@ -168,9 +168,7 @@
         if (this.hasOwnProperty(repeatKey)) {
           // you've got this! lets make magic and
           // pass in some dataz
-          if (node.innerHTML != this[repeatKey]) {
-            setupTextNode(node, this[repeatKey]);
-          }
+          setupTextNode(node, this[repeatKey]);
           // hey, if you want to bind repeats --
           // know that it's possible with this opt
           // but also know it isn't quite as performant
@@ -194,7 +192,7 @@
     var repeatModel, attrs, repeatElKeys, frag, processRepeats;
     if (state.model[key] instanceof Array) {
       // hide our first elem, so we can use it later
-      if (this.style.display != 'none') this.style.display = 'none';
+      if (this.style.visibility != 'hidden') this.style.visibility = 'hidden';
       repeatModel = state.model[key];
       attrs = attr(this);
       
@@ -215,8 +213,8 @@
       repeatElKeys = Object.keys(state.repeats[key]);
       if (repeatElKeys.length > repeatModel.length) {
         for(var o=repeatModel.length;o<repeatElKeys.length;++o) {
-          if (state.repeats[key][repeatElKeys[o]].style.display != 'none') {
-            state.repeats[key][repeatElKeys[o]].style.display = 'none';
+          if (state.repeats[key][repeatElKeys[o]].style.visibility != 'hidden') {
+            state.repeats[key][repeatElKeys[o]].style.visibility = 'hidden';
           }
         }
       }
@@ -258,7 +256,7 @@
             setupTextNode(el, repeat);
           }
           // let their be light XD
-          if (el.style.display == 'none') el.style.display = '';
+          if (el.style.visibility == 'hidden') el.style.visibility = '';
           // only append new elems to our frag, 
           // everything else exists.
           if (newEl) frag.appendChild(el);
@@ -315,9 +313,7 @@
       typeof state.model[key] != 'object') {
       // encode and set a reference of our 
       // newly bound value
-      if (state.model[key] != this.innerHTML) {
-        setupTextNode(this, state.model[key]);
-      }
+      setupTextNode(this, state.model[key]);
     }
   }
   
@@ -336,7 +332,9 @@
       if (val === 'null' || val === null) val = '';
       var tn = document.createTextNode(val);
       if (el.hasChildNodes()) {
-        el.childNodes[0].nodeValue = val;
+        if (el.childNodes[0].nodeValue != val) {
+          el.childNodes[0].nodeValue = val;
+        }
       } else {
         el.appendChild(tn);
       }

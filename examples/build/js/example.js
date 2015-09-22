@@ -6,11 +6,17 @@ var example = (function(w,d,pub) {
   };
 
   pub.updateModel = function(el,model,keys,count) {
-    var updated = {};
+    var tn, val, updated = {};
     if (model) updated.model = model;
     if (keys) updated.keys = keys;
     if (count) updated.count = count;
-    el.innerHTML = JSON.stringify(updated,null,2);
+    val = "" + JSON.stringify(updated,null,2);
+    if (el.hasChildNodes()) {
+      el.childNodes[0].nodeValue = val;
+    } else {
+      tn = d.createTextNode(val);
+      el.appendChild(tn);
+    }
     return pub;
   };
 
