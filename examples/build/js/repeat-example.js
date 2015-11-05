@@ -15,8 +15,8 @@ var repeatExample = (function(w,d) {
     modelOutput = d.getElementById('repeatModel');
 
     var lotsOfRepeats = [];
-    for(var i=0;i<1;++i) {
-      lotsOfRepeats.push({name: 'murk', age: 5});
+    for(var i=0;i<20;++i) {
+      lotsOfRepeats.push({name: 'murk', age: i+1});
     }
 
     m.on('formErrors', function(key) {
@@ -58,6 +58,7 @@ var repeatExample = (function(w,d) {
           var itemData = item.dataset;
           if (item.value) {
             person[itemData.murkExampleKey] = item.value;
+            item.value = '';
           }
         }
 

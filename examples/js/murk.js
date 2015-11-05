@@ -5,7 +5,9 @@
     window[def] = fn;
   }
 })('murk', function murk(options) {
+
   if (!(this instanceof murk)) return new murk(options);
+  
   // state reference, mostly for 
   // dev/internal use and context
   var state = {

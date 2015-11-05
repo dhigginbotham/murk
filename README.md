@@ -1,5 +1,5 @@
 #murk
-event driven data binding for the modern browser. dependency free, all that cool `js` hipster stuff :neckbeard: tiny `~3kb` component that gives you all the data binding functionality you need, with a `fuck ie8,9, and you too ie10` outlook. view the [demo](http://dhigginbotham.github.io/murk), check out the [examples](https://github.com/dhigginbotham/murk/blob/master/examples/js/example.js). 
+event driven data binding for the modern browser. dependency free, all that cool `js` hipster stuff :neckbeard: tiny `~3kb` component that gives you all the data binding functionality you need, with a `fuck ie8,9, and you too ie10` outlook. view the [demo](http://dhigginbotham.github.io/murk), check out the [examples](https://github.com/dhigginbotham/murk/blob/master/examples/build/js/basic-example.js). 
 
 ##API
 ###Binding
