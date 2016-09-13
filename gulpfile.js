@@ -6,6 +6,8 @@ var gulp = require('gulp'),
     gconcat = require('gulp-concat'),
     gtemplate = require('gulp-template'),
     grename = require('gulp-rename'),
+    gdata = require('gulp-data'),
+    stringEscape = require('js-string-escape'),
     fs = require('fs');
 
 
@@ -39,14 +41,14 @@ gulp.task('examples', function() {
 
 gulp.task('template', ['examples'], function() {
   var templateFiles = { 
-    basicJs: fs.readFileSync('./examples/build/js/basic-example.js'),
-    repeatJs: fs.readFileSync('./examples/build/js/repeat-example.js'),
-    basicTmpl: fs.readFileSync('./examples/build/templates/basic-example.tmpl'),
-    repeatTmpl: fs.readFileSync('./examples/build/templates/repeat-example.tmpl')
+    basicJs: fs.readFileSync('./examples/build/js/basic-example.js').toString(),
+    repeatJs: fs.readFileSync('./examples/build/js/repeat-example.js').toString(),
+    basicTmpl: fs.readFileSync('./examples/build/templates/basic-example.tmpl').toString(),
+    repeatTmpl: fs.readFileSync('./examples/build/templates/repeat-example.tmpl').toString()
   };
   return gulp.src('./examples/build/templates/layout.tmpl')
     .on('error', gutil.log)
-    .pipe(gtemplate(templateFiles))
+    .pipe(gtemplate({ data: templateFiles }))
     .pipe(grename('./index.html'))
     .pipe(gulp.dest('./examples'));
 });
@@ -57,7 +59,7 @@ gulp.task('gh', function() {
 });
 
 gulp.task('watch', function() {
-  gulp.watch(['./src/**/*','./examples/**/*'], ['min', 'zip', 'template']);
+  gulp.watch(['./src/**/*','./examples/**/*', './gulpfile.js'], ['min', 'zip', 'template']);
 });
 
-gulp.task('default', ['min', 'zip', 'watch']);
+gulp.task('default', ['min', 'zip', 'template', 'watch']);

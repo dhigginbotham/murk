@@ -17,6 +17,7 @@
     repeats: {},
     subscribers: {},
     filters: {},
+    links: {},
     keys: [],
     start: Date.now(),
     totalCount: 0
@@ -26,7 +27,7 @@
     selectorPrefix: 'data-murk',
     dev: false,
     id: state.start,
-    defaultSubscribers: [handleRepeat, elemBindingEvent, processFiltersEvent, trackCountEvent]
+    defaultSubscribers: [handleRepeat, elemBindingEvent, processFiltersEvent, processLinkedPropertiesEvent, trackCountEvent]
   };
 
   if (options) extend(opts, options);
@@ -102,9 +103,10 @@
 
   // binds elem from model, simple things
   function bindElem(elem) {
-    var attrs, key;
+    var attrs, key, linked;
     attrs = attr(elem);
     key = attrs(opts.selectorPrefix);
+    linked = attrs(opts.selectorPrefix + '-linked');
     if (key) {
       // if we dont have an id set already
       // we set one here so that we dont step
@@ -122,9 +124,7 @@
             state.dom.push(elem);
           }
           // lets allow databinding of embedded values..
-          if (elem.innerHTML && !state.model.hasOwnProperty(key)) {
-            state.model[key] = elem.innerHTML;
-          }
+          if (!state.model.hasOwnProperty(key)) state.model[key] = elem.innerHTML || '';
         }
         if (state.model.hasOwnProperty(key)) {
           // handle any subscribers on this elem
@@ -305,14 +305,84 @@
     return this;
   }
 
+  // processes linked properties, this is a rought first draft
+  // will deal more with this laters.
+  function processLinkedPropertiesEvent(key) {
+    var attrs = attr(this);
+    if (attrs) {
+      var linked = processLinkedNodes.call(this, key);
+      Array.prototype.forEach.call(linked.links, processorLinks.bind(null, linked), this);
+    }
+  }
+
+  function processorLinks(linked, process) {
+    if (state.model.hasOwnProperty(process)
+      && state.elems.hasOwnProperty(process)
+      && state.links.hasOwnProperty(linked.key)
+      && state.links[linked.key].links.indexOf(process) !== -1
+    ) {
+      var val = state.links.hasOwnProperty(linked.key)
+        ? state.links[linked.key].func.call(this, state.model)
+        : null;
+      if (!val) return false;
+      var elattrs = attr(state.elems[process]);
+      var associateLink = elattrs(opts.selectorPrefix + '-linked-to')
+        ? elattrs(opts.selectorPrefix + '-linked-to')
+        : elattrs(opts.selectorPrefix + '-linked-to', linked.key);
+      state.model[linked.key] = val;
+      return setupTextNode(state.elems[linked.key], state.model[linked.key]);
+    }
+  }
+
+  function processLinkedNodes(key) {
+    var node = {};
+    var attrs = attr(this);
+    if (attrs) {
+      node.links = attrs(opts.selectorPrefix + '-linked')
+        ? attrs(opts.selectorPrefix + '-linked')
+        : [];
+      node.linksTo = attrs(opts.selectorPrefix + '-linked-to')
+            ? attrs(opts.selectorPrefix + '-linked-to')
+            : null;
+      node.key = node.linksTo ? node.linksTo : key;
+      if (node.links.length) {
+        if (node.links.indexOf(',') !== -1) node.links = node.links.split(',');
+        if (!(node.links instanceof Array)) node.links = [node.links];
+        if (state.links.hasOwnProperty(key)) state.links[key].links = state.links[key].links
+          .concat(links.filter(function(link) {
+            return state.links[key].links.indexOf(link) === -1;
+          })
+        );
+      } else {
+        node.links = node.key && state.links.hasOwnProperty(node.key)
+          ? state.links[node.key].links
+          : [];
+      }
+      return node;
+    }
+    return null;
+  }
+
+  // creates a new key link onto the model 
+  // from already bound data
+  function linkProperty(key, links, fn) {
+    if (typeof links === 'function'
+      && typeof fn === 'undefined') fn = links, links = [];
+    state.links[key] = {
+      links: links,
+      func: fn
+    };
+    return this;
+  }
+
   // when we bind elements we want to do some
   // stuff to them to get some real databinding
   // however it's a lot of opinionated ideas so
   // keeping them as an event allows you to remove
   // this...
   function elemBindingEvent(key) {
-    if (!(state.model[key] instanceof Array) && 
-      typeof state.model[key] != 'object') {
+    if ((!(state.model[key] instanceof Array) && 
+      typeof state.model[key] != 'object')) {
       // encode and set a reference of our 
       // newly bound value
       setupTextNode(this, state.model[key]);
@@ -341,6 +411,7 @@
         el.appendChild(tn);
       }
     }
+    return el;
   }
 
   // just a wrapper for elem.[set/get]Attribute()
@@ -378,6 +449,7 @@
   this.set = setModel;
   this.on = attachSubscriber;
   this.registerFilter = registerFilter;
+  this.linkProperty = linkProperty;
   if (opts.dev) this.state = state;
 
   return this;

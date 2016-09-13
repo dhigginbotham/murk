@@ -34,7 +34,8 @@ var repeatExample = (function(w,d) {
     $('[data-murk-example-amounts]').on('click', function() {
       var data = this.dataset;
       var ref = m.state.model.repeatedExample;
-      for (var i=0;i<parseInt(data.murkExampleAmounts,0);++i) {
+      var ln = parseInt(data.murkExampleAmounts,0);
+      for(var i=0;i<ln;++i) {
         ref.push({ name: 'murk', age: (5+i)});
       }
       m.set('repeatedExample', ref);

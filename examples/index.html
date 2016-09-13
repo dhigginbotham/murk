@@ -59,6 +59,14 @@
     </div>
     <input type="text" id="fourthExample" data-murk-example="basic"/>    
   </div>  
+
+  <hr/>
+
+  <h3 name="linked-example">Linked Property Example: </h3>
+  <div class="hero">
+    <div data-murk-id="basic" data-murk="linkedExample" data-murk-filter="highlightText"></div>
+  </div>
+
 </div>
 
     </div>
@@ -67,7 +75,8 @@
     <pre id="basicModel"></pre>
 
     <h3>Example usage: </h3>
-    <pre class="cf" id="basicJs">var basicExample = (function(w,d) {
+    <pre class="cf" id="basicJs">
+      var basicExample = (function(w,d) {
   var modelOutput, m;
 
   m = murk({
@@ -77,6 +86,8 @@
     return val.split('').reverse().join('');
   }).registerFilter('highlightText', function() {
     this.style.color = 'red';
+  }).linkProperty('linkedExample', ['firstExample', 'thirdExample'], function(model) {
+    return model.firstExample + ' ' + model.thirdExample;
   });
 
   function init() {
@@ -95,7 +106,7 @@
     }).set({
       firstExample: 'this is',
       secondExample: 'data binding',
-      thirdExample: 'murked.'
+      thirdExample: 'murked.',
     });
 
     example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
@@ -112,7 +123,8 @@
 
   return m;
 
-})(window,document);</pre>
+})(window,document);
+    </pre>
 
     <hr/>
 
@@ -165,7 +177,8 @@
     <pre id="repeatModel"></pre>
 
     <h3>Example usage: </h3>
-    <!-- <pre class="cf" id="repeatJs">var repeatExample = (function(w,d) {
+    <pre class="cf" id="repeatJs">
+      var repeatExample = (function(w,d) {
   var modelOutput, m;
 
   m = murk({
@@ -182,7 +195,7 @@
     modelOutput = d.getElementById('repeatModel');
 
     var lotsOfRepeats = [];
-    for(var i=0;i<20;++i) {
+    for(var i=0;i&lt;20;++i) {
       lotsOfRepeats.push({name: 'murk', age: i+1});
     }
 
@@ -201,7 +214,8 @@
     $('[data-murk-example-amounts]').on('click', function() {
       var data = this.dataset;
       var ref = m.state.model.repeatedExample;
-      for (var i=0;i<parseInt(data.murkExampleAmounts,0);++i) {
+      var ln = parseInt(data.murkExampleAmounts,0);
+      for(var i=0;i&lt;ln;++i) {
         ref.push({ name: 'murk', age: (5+i)});
       }
       m.set('repeatedExample', ref);
@@ -220,7 +234,7 @@
           msg: null
         };
         var $items = $('[data-murk-example-key]');
-        for (var i=0;i<$items.length;++i) {
+        for (var i=0;i&lt;$items.length;++i) {
           var item = $items[i];
           var itemData = item.dataset;
           if (item.value) {
@@ -259,7 +273,8 @@
 
   return m;
 
-})(window,document);</pre> -->
+})(window,document);
+    </pre>
 
     <hr/>
   </div>
