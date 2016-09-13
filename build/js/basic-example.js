@@ -8,6 +8,8 @@ var basicExample = (function(w,d) {
     return val.split('').reverse().join('');
   }).registerFilter('highlightText', function() {
     this.style.color = 'red';
+  }).linkProperty('linkedExample', ['firstExample', 'thirdExample'], function(model) {
+    return model.firstExample + ' ' + model.thirdExample;
   });
 
   function init() {
@@ -26,7 +28,7 @@ var basicExample = (function(w,d) {
     }).set({
       firstExample: 'this is',
       secondExample: 'data binding',
-      thirdExample: 'murked.'
+      thirdExample: 'murked.',
     });
 
     example.updateModel(modelOutput,m.state.model,m.state.keys,m.state.totalCount);
